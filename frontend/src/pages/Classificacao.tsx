@@ -68,7 +68,6 @@ const Classificacao = () => {
 
         const requiredColumns = [
           "transit_id",
-          "disposition",
           "pl_period",
           "pl_transit_duration",
           "pl_transit_depth",
@@ -78,8 +77,6 @@ const Classificacao = () => {
           "st_eff_temp",
           "st_radius",
           "st_logg",
-          "ra",
-          "dec",
         ];
 
         const missingColumns = requiredColumns.filter(
