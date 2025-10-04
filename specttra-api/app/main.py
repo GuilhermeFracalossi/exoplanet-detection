@@ -9,7 +9,7 @@ app = FastAPI(
 )
 # Permitir requisições do frontend
 origins = [
-    "http://localhost:8080",  # endereço do seu frontend
+    "*",  # endereço do seu frontend
     # você pode adicionar "*" para liberar todas as origens (não recomendado em produção)
 ]
 
@@ -21,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],  # permite todos os headers
 )
 
-app.include_router(api_router, prefix="/api/v1")
+app.include_router(api_router, prefix="/v1")
 
 @app.get("/")
 def root():
