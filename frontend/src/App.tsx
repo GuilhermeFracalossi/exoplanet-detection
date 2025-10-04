@@ -7,6 +7,7 @@ import { Navbar } from "@/components/Navbar";
 import Index from "./pages/Index";
 import Classificacao from "./pages/Classificacao";
 import FineTuning from "./pages/FineTuning";
+import { Planos } from "./pages/Planos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/classificacao" element={<Classificacao />} />
           <Route path="/fine-tuning" element={<FineTuning />} />
+          <Route path="/planos" element={<Planos />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
