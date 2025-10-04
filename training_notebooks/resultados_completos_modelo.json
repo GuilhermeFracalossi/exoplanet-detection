@@ -1,7 +1,7 @@
 {
     "modelos_internos": [
         {
-            "Modelo": "LightGBM (Optuna saved)",
+            "Modelo": "Specttra-1",
             "AUC ROC Média": 0.9072015875256294,
             "AUC PRC Média": 0.9341440640808341,
             "Acurácia Média": 0.8430716632568602,

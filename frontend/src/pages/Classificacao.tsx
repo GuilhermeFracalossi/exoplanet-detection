@@ -180,7 +180,7 @@ const Classificacao = () => {
     formData.append("mission", mission);
     formData.append("threshold", threshold[0].toString());
 
-    const response = await fetch("http://localhost/api/v1/predict", {
+    const response = await fetch("http://localhost:8000/api/v1/predict", {
       method: "POST",
       body: formData,
       headers: {

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { StarField } from "@/components/StarField";
 import { MetricCard } from "@/components/MetricCard";
 import heroImage from "@/assets/hero-planet.jpg";
+import { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -47,6 +48,23 @@ const missionData = [
 ];
 
 const Index = () => {
+  const [realMetrics, setRealMetrics] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Buscar métricas reais da API
+    fetch("http://localhost:8000/api/v1/metrics")
+      .then((res) => res.json())
+      .then((data) => {
+        setRealMetrics(data.modelos_internos[0]);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Erro ao buscar métricas:", err);
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="min-h-screen">
       <StarField />
@@ -130,15 +148,15 @@ const Index = () => {
               delay={0}
             />
             <MetricCard
-              title="Precisão Média"
-              value="92.0%"
-              description="Accuracy across missions"
+              title={loading ? "Carregando..." : "Acurácia do Modelo"}
+              value={loading ? "..." : `${(realMetrics?.Acuracia_Media * 100).toFixed(1)}%`}
+              description="Specttra Model"
               icon={<TrendingUp className="h-4 w-4" />}
               delay={0.1}
             />
             <MetricCard
-              title="ROC-AUC Médio"
-              value="0.96"
+              title={loading ? "Carregando..." : "ROC-AUC Score"}
+              value={loading ? "..." : realMetrics?.AUC_ROC_Media.toFixed(3)}
               description="Excelente discriminação"
               icon={<Cpu className="h-4 w-4" />}
               delay={0.2}
@@ -152,6 +170,47 @@ const Index = () => {
             className="bg-card rounded-2xl p-8 shadow-lg"
           >
             <h3 className="text-2xl font-bold mb-6">
+              {loading ? "Carregando métricas..." : `Métricas do Modelo: ${realMetrics?.Modelo || "Specttra"}`}
+            </h3>
+            {!loading && realMetrics && (
+              <div className="grid md:grid-cols-2 gap-8 mb-8">
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-primary">Métricas Gerais</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                      <span className="text-muted-foreground">ROC-AUC:</span>
+                      <span className="font-bold text-lg">{(realMetrics.AUC_ROC_Media * 100).toFixed(2)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                      <span className="text-muted-foreground">PR-AUC:</span>
+                      <span className="font-bold text-lg">{(realMetrics.AUC_PRC_Media * 100).toFixed(2)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                      <span className="text-muted-foreground">Acurácia:</span>
+                      <span className="font-bold text-lg">{(realMetrics.Acuracia_Media * 100).toFixed(2)}%</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-secondary">Detecção de Planetas</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                      <span className="text-muted-foreground">Precisão:</span>
+                      <span className="font-bold text-lg">{(realMetrics.Precisao_Planeta_Media * 100).toFixed(2)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                      <span className="text-muted-foreground">Recall:</span>
+                      <span className="font-bold text-lg">{(realMetrics.Recall_Planeta_Media * 100).toFixed(2)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                      <span className="text-muted-foreground">F1-Score:</span>
+                      <span className="font-bold text-lg">{(realMetrics.F1_Planeta_Media * 100).toFixed(2)}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <h3 className="text-2xl font-bold mb-6 mt-8">
               Descobertas e Performance por Missão
             </h3>
             <ResponsiveContainer width="100%" height={400}>
