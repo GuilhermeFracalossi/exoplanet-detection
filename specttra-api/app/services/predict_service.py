@@ -33,11 +33,11 @@ def predict_exoplanets_from_csv(file_like):
 
     # 2. Carregar CSV
     novos_dados_df = pd.read_csv(file_like)
-
+    novos_dados_df.columns = novos_dados_df.columns.str.strip()
     # 3. Validar colunas
     missing_cols = [col for col in FEATURE_COLUMNS if col not in novos_dados_df.columns]
     if missing_cols:
-        raise ValueError(f"Faltando colunas no CSV: {missing_cols}")
+        raise ValueError(f"Faltando colunas no CSV: {missing_cols}, colunas recebidas: {list(novos_dados_df.columns)}")
 
     ids_dos_transitos = novos_dados_df['transit_id']
     features_para_prever = novos_dados_df[FEATURE_COLUMNS]
