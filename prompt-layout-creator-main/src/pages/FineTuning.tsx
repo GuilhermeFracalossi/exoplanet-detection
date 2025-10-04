@@ -1,12 +1,33 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Lock, Upload, Sparkles, TrendingUp, Settings, Save, X } from "lucide-react";
+import {
+  Lock,
+  Upload,
+  Sparkles,
+  TrendingUp,
+  Settings,
+  Save,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
 const FineTuning = () => {
@@ -23,7 +44,6 @@ const FineTuning = () => {
   if (!isPremium) {
     return (
       <div className="min-h-screen bg-background">
-        
         <main className="container pt-24 pb-16">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -35,9 +55,11 @@ const FineTuning = () => {
                 <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mb-4">
                   <Lock className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-3xl mb-2">Fine Tuning Premium</CardTitle>
+                <CardTitle className="text-3xl mb-2">
+                  Fine Tuning Premium
+                </CardTitle>
                 <CardDescription className="text-lg">
-                  Aprimore o modelo ExoSight com seus próprios dados rotulados
+                  Aprimore o modelo Specttra com seus próprios dados rotulados
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
@@ -52,9 +74,11 @@ const FineTuning = () => {
                         <span className="text-primary">✓</span>
                         <span>Upload de dados com rótulos (target)</span>
                       </li>
-                       <li className="flex items-start gap-2">
+                      <li className="flex items-start gap-2">
                         <span className="text-primary">✓</span>
-                        <span>Concatenação automática com dataset base ExoSight</span>
+                        <span>
+                          Concatenação automática com dataset base Specttra
+                        </span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-primary">✓</span>
@@ -84,8 +108,13 @@ const FineTuning = () => {
                         { label: "ROC-AUC", value: "0.97" },
                         { label: "PR-AUC", value: "0.93" },
                       ].map((metric) => (
-                        <div key={metric.label} className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">{metric.label}</span>
+                        <div
+                          key={metric.label}
+                          className="flex justify-between items-center"
+                        >
+                          <span className="text-sm text-muted-foreground">
+                            {metric.label}
+                          </span>
                           <Badge variant="secondary">{metric.value}</Badge>
                         </div>
                       ))}
@@ -99,10 +128,10 @@ const FineTuning = () => {
                 <div className="border-t pt-6">
                   <div className="text-center space-y-4">
                     <p className="text-muted-foreground">
-                      Desbloqueie o potencial completo do ExoSight
+                      Desbloqueie o potencial completo do Specttra
                     </p>
-                    <Button 
-                      size="lg" 
+                    <Button
+                      size="lg"
                       className="text-lg px-8"
                       onClick={() => setIsPremium(true)}
                     >
@@ -124,7 +153,6 @@ const FineTuning = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      
       <main className="container pt-24 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -139,7 +167,7 @@ const FineTuning = () => {
             </Badge>
           </div>
           <p className="text-xl text-muted-foreground">
-            Personalize o modelo ExoSight com seus dados rotulados
+            Personalize o modelo Specttra com seus dados rotulados
           </p>
         </motion.div>
 
@@ -172,23 +200,28 @@ const FineTuning = () => {
               <CardHeader>
                 <CardTitle>Configuração de Dados</CardTitle>
                 <CardDescription>
-                  Seus dados serão automaticamente concatenados com o dataset base ExoSight
+                  Seus dados serão automaticamente concatenados com o dataset
+                  base Specttra
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="bg-muted rounded-lg p-4 space-y-2">
-                  <h4 className="font-semibold text-sm">Resumo da Concatenação</h4>
+                  <h4 className="font-semibold text-sm">
+                    Resumo da Concatenação
+                  </h4>
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
                       <div className="text-muted-foreground">Seus dados</div>
                       <div className="font-semibold">—</div>
                     </div>
                     <div>
-                      <div className="text-muted-foreground">Base ExoSight</div>
+                      <div className="text-muted-foreground">Base Specttra</div>
                       <div className="font-semibold">5,043</div>
                     </div>
                     <div>
-                      <div className="text-muted-foreground">Total após upload</div>
+                      <div className="text-muted-foreground">
+                        Total após upload
+                      </div>
                       <div className="font-semibold text-primary">5,043+</div>
                     </div>
                   </div>
@@ -210,23 +243,34 @@ const FineTuning = () => {
                 <div className="grid md:grid-cols-2 gap-4 text-sm mb-4">
                   <div className="space-y-1">
                     <Label>n_estimators</Label>
-                    <div className="text-muted-foreground">{hyperparams.n_estimators}</div>
+                    <div className="text-muted-foreground">
+                      {hyperparams.n_estimators}
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <Label>max_depth</Label>
-                    <div className="text-muted-foreground">{hyperparams.max_depth}</div>
+                    <div className="text-muted-foreground">
+                      {hyperparams.max_depth}
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <Label>learning_rate</Label>
-                    <div className="text-muted-foreground">{hyperparams.learning_rate}</div>
+                    <div className="text-muted-foreground">
+                      {hyperparams.learning_rate}
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <Label>k-fold CV</Label>
-                    <div className="text-muted-foreground">{hyperparams.k_fold}</div>
+                    <div className="text-muted-foreground">
+                      {hyperparams.k_fold}
+                    </div>
                   </div>
                 </div>
-                
-                <Dialog open={isEditingHyperparams} onOpenChange={setIsEditingHyperparams}>
+
+                <Dialog
+                  open={isEditingHyperparams}
+                  onOpenChange={setIsEditingHyperparams}
+                >
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full">
                       <Settings className="h-4 w-4 mr-2" />
@@ -237,7 +281,8 @@ const FineTuning = () => {
                     <DialogHeader>
                       <DialogTitle>Editar Hiperparâmetros</DialogTitle>
                       <DialogDescription>
-                        Ajuste os parâmetros do modelo para otimizar o treinamento
+                        Ajuste os parâmetros do modelo para otimizar o
+                        treinamento
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
@@ -247,22 +292,36 @@ const FineTuning = () => {
                           id="n_estimators"
                           type="number"
                           value={hyperparams.n_estimators}
-                          onChange={(e) => setHyperparams({...hyperparams, n_estimators: parseInt(e.target.value)})}
+                          onChange={(e) =>
+                            setHyperparams({
+                              ...hyperparams,
+                              n_estimators: parseInt(e.target.value),
+                            })
+                          }
                         />
-                        <p className="text-xs text-muted-foreground">Número de árvores no ensemble</p>
+                        <p className="text-xs text-muted-foreground">
+                          Número de árvores no ensemble
+                        </p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <Label htmlFor="max_depth">max_depth</Label>
                         <Input
                           id="max_depth"
                           type="number"
                           value={hyperparams.max_depth}
-                          onChange={(e) => setHyperparams({...hyperparams, max_depth: parseInt(e.target.value)})}
+                          onChange={(e) =>
+                            setHyperparams({
+                              ...hyperparams,
+                              max_depth: parseInt(e.target.value),
+                            })
+                          }
                         />
-                        <p className="text-xs text-muted-foreground">Profundidade máxima de cada árvore</p>
+                        <p className="text-xs text-muted-foreground">
+                          Profundidade máxima de cada árvore
+                        </p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <Label htmlFor="learning_rate">learning_rate</Label>
                         <Input
@@ -270,29 +329,44 @@ const FineTuning = () => {
                           type="number"
                           step="0.01"
                           value={hyperparams.learning_rate}
-                          onChange={(e) => setHyperparams({...hyperparams, learning_rate: parseFloat(e.target.value)})}
+                          onChange={(e) =>
+                            setHyperparams({
+                              ...hyperparams,
+                              learning_rate: parseFloat(e.target.value),
+                            })
+                          }
                         />
-                        <p className="text-xs text-muted-foreground">Taxa de aprendizado do modelo</p>
+                        <p className="text-xs text-muted-foreground">
+                          Taxa de aprendizado do modelo
+                        </p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <Label htmlFor="k_fold">k-fold CV</Label>
                         <Input
                           id="k_fold"
                           type="number"
                           value={hyperparams.k_fold}
-                          onChange={(e) => setHyperparams({...hyperparams, k_fold: parseInt(e.target.value)})}
+                          onChange={(e) =>
+                            setHyperparams({
+                              ...hyperparams,
+                              k_fold: parseInt(e.target.value),
+                            })
+                          }
                         />
-                        <p className="text-xs text-muted-foreground">Número de folds para cross-validation</p>
+                        <p className="text-xs text-muted-foreground">
+                          Número de folds para cross-validation
+                        </p>
                       </div>
-                      
-                      <Button 
-                        className="w-full" 
+
+                      <Button
+                        className="w-full"
                         onClick={() => {
                           setIsEditingHyperparams(false);
                           toast({
                             title: "Hiperparâmetros atualizados",
-                            description: "As configurações foram salvas com sucesso.",
+                            description:
+                              "As configurações foram salvas com sucesso.",
                           });
                         }}
                       >
@@ -344,7 +418,11 @@ const FineTuning = () => {
                     "stellar_mass",
                     "teff_k",
                   ].map((feature) => (
-                    <Badge key={feature} variant="secondary" className="text-xs">
+                    <Badge
+                      key={feature}
+                      variant="secondary"
+                      className="text-xs"
+                    >
                       {feature}
                     </Badge>
                   ))}

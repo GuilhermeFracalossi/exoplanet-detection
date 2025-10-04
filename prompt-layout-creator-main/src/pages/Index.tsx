@@ -20,16 +20,37 @@ import {
 } from "recharts";
 
 const missionData = [
-  { mission: "Kepler (KOI)", descobertas: 2335, accuracy: 0.93, f1: 0.90, rocAuc: 0.97, prAuc: 0.92 },
-  { mission: "K2", descobertas: 479, accuracy: 0.91, f1: 0.88, rocAuc: 0.95, prAuc: 0.90 },
-  { mission: "TESS", descobertas: 387, accuracy: 0.92, f1: 0.89, rocAuc: 0.96, prAuc: 0.91 },
+  {
+    mission: "Kepler (KOI)",
+    descobertas: 2335,
+    accuracy: 0.93,
+    f1: 0.9,
+    rocAuc: 0.97,
+    prAuc: 0.92,
+  },
+  {
+    mission: "K2",
+    descobertas: 479,
+    accuracy: 0.91,
+    f1: 0.88,
+    rocAuc: 0.95,
+    prAuc: 0.9,
+  },
+  {
+    mission: "TESS",
+    descobertas: 387,
+    accuracy: 0.92,
+    f1: 0.89,
+    rocAuc: 0.96,
+    prAuc: 0.91,
+  },
 ];
 
 const Index = () => {
   return (
     <div className="min-h-screen">
       <StarField />
-      
+
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="container relative z-10">
@@ -46,8 +67,9 @@ const Index = () => {
                 </span>
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Algoritmo proprietário treinado em dados de missões Kepler, K2 e TESS.
-                Classifique candidatos a exoplanetas com precisão de até 97% ROC-AUC.
+                Algoritmo proprietário treinado em dados de missões Kepler, K2 e
+                TESS. Classifique candidatos a exoplanetas com precisão de até
+                97% ROC-AUC.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" asChild className="group">
@@ -92,7 +114,9 @@ const Index = () => {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold mb-4">Performance do Modelo ExoSight</h2>
+            <h2 className="text-4xl font-bold mb-4">
+              Performance do Modelo Specttra
+            </h2>
             <p className="text-xl text-muted-foreground">
               Métricas validadas em dados reais de missões espaciais
             </p>
@@ -128,13 +152,19 @@ const Index = () => {
             viewport={{ once: true }}
             className="bg-card rounded-2xl p-8 shadow-lg"
           >
-            <h3 className="text-2xl font-bold mb-6">Descobertas e Performance por Missão</h3>
+            <h3 className="text-2xl font-bold mb-6">
+              Descobertas e Performance por Missão
+            </h3>
             <ResponsiveContainer width="100%" height={400}>
               <ComposedChart data={missionData}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
                 <XAxis dataKey="mission" />
                 <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" domain={[0.85, 1.0]} />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  domain={[0.85, 1.0]}
+                />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "hsl(var(--card))",
@@ -143,7 +173,12 @@ const Index = () => {
                   }}
                 />
                 <Legend />
-                <Bar yAxisId="left" dataKey="descobertas" name="Descobertas" fill="hsl(var(--chart-1))" />
+                <Bar
+                  yAxisId="left"
+                  dataKey="descobertas"
+                  name="Descobertas"
+                  fill="hsl(var(--chart-1))"
+                />
                 <Line
                   yAxisId="right"
                   type="monotone"
@@ -170,19 +205,27 @@ const Index = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Accuracy:</span>
-                    <span className="font-semibold">{(mission.accuracy * 100).toFixed(1)}%</span>
+                    <span className="font-semibold">
+                      {(mission.accuracy * 100).toFixed(1)}%
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">F1-Score:</span>
-                    <span className="font-semibold">{mission.f1.toFixed(2)}</span>
+                    <span className="font-semibold">
+                      {mission.f1.toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">ROC-AUC:</span>
-                    <span className="font-semibold">{mission.rocAuc.toFixed(2)}</span>
+                    <span className="font-semibold">
+                      {mission.rocAuc.toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">PR-AUC:</span>
-                    <span className="font-semibold">{mission.prAuc.toFixed(2)}</span>
+                    <span className="font-semibold">
+                      {mission.prAuc.toFixed(2)}
+                    </span>
                   </div>
                 </div>
               </motion.div>
@@ -211,17 +254,20 @@ const Index = () => {
               {
                 step: "1",
                 title: "Carregue seu CSV",
-                description: "Faça upload de dados com features de trânsito como período orbital, duração, profundidade e SNR.",
+                description:
+                  "Faça upload de dados com features de trânsito como período orbital, duração, profundidade e SNR.",
               },
               {
                 step: "2",
                 title: "Classifique",
-                description: "Nosso modelo proprietário analisa cada candidato e retorna probabilidades para cada classe.",
+                description:
+                  "Nosso modelo proprietário analisa cada candidato e retorna probabilidades para cada classe.",
               },
               {
                 step: "3",
                 title: "Fine Tuning (Premium)",
-                description: "Ajuste o modelo com seus próprios dados rotulados para melhorar ainda mais a precisão.",
+                description:
+                  "Ajuste o modelo com seus próprios dados rotulados para melhorar ainda mais a precisão.",
               },
             ].map((item, idx) => (
               <motion.div
@@ -260,7 +306,9 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border/40 py-8">
         <div className="container text-center text-sm text-muted-foreground">
-          <p>© 2025 ExoSight. Classificação de exoplanetas com Machine Learning.</p>
+          <p>
+            © 2025 Specttra. Classificação de exoplanetas com Machine Learning.
+          </p>
         </div>
       </footer>
     </div>

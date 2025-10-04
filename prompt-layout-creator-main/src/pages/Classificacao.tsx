@@ -1,15 +1,40 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Upload, FileText, AlertCircle, CheckCircle2, Download } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  AlertCircle,
+  CheckCircle2,
+  Download,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 
 const Classificacao = () => {
@@ -41,34 +66,90 @@ const Classificacao = () => {
     }
 
     setIsProcessing(true);
-    
+
     // Simular processamento
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     // Simular resultados linha por linha do CSV
     const mockRows = [
-      { id: "KOI-001", orbital_period: 3.52, transit_duration: 2.1, planet_radius: 1.8, class: "CONFIRMED", confidence: 0.94 },
-      { id: "KOI-002", orbital_period: 10.23, transit_duration: 3.5, planet_radius: 2.3, class: "PC", confidence: 0.78 },
-      { id: "KOI-003", orbital_period: 1.89, transit_duration: 1.2, planet_radius: 0.9, class: "FP", confidence: 0.67 },
-      { id: "KOI-004", orbital_period: 15.67, transit_duration: 4.1, planet_radius: 3.1, class: "CONFIRMED", confidence: 0.91 },
-      { id: "KOI-005", orbital_period: 7.34, transit_duration: 2.8, planet_radius: 1.5, class: "PC", confidence: 0.82 },
-      { id: "KOI-006", orbital_period: 2.45, transit_duration: 1.6, planet_radius: 1.2, class: "FP", confidence: 0.55 },
-      { id: "KOI-007", orbital_period: 22.18, transit_duration: 5.3, planet_radius: 4.2, class: "CONFIRMED", confidence: 0.88 },
-      { id: "KOI-008", orbital_period: 5.91, transit_duration: 2.3, planet_radius: 1.9, class: "APC", confidence: 0.71 },
+      {
+        id: "KOI-001",
+        orbital_period: 3.52,
+        transit_duration: 2.1,
+        planet_radius: 1.8,
+        class: "CONFIRMED",
+        confidence: 0.94,
+      },
+      {
+        id: "KOI-002",
+        orbital_period: 10.23,
+        transit_duration: 3.5,
+        planet_radius: 2.3,
+        class: "PC",
+        confidence: 0.78,
+      },
+      {
+        id: "KOI-003",
+        orbital_period: 1.89,
+        transit_duration: 1.2,
+        planet_radius: 0.9,
+        class: "FP",
+        confidence: 0.67,
+      },
+      {
+        id: "KOI-004",
+        orbital_period: 15.67,
+        transit_duration: 4.1,
+        planet_radius: 3.1,
+        class: "CONFIRMED",
+        confidence: 0.91,
+      },
+      {
+        id: "KOI-005",
+        orbital_period: 7.34,
+        transit_duration: 2.8,
+        planet_radius: 1.5,
+        class: "PC",
+        confidence: 0.82,
+      },
+      {
+        id: "KOI-006",
+        orbital_period: 2.45,
+        transit_duration: 1.6,
+        planet_radius: 1.2,
+        class: "FP",
+        confidence: 0.55,
+      },
+      {
+        id: "KOI-007",
+        orbital_period: 22.18,
+        transit_duration: 5.3,
+        planet_radius: 4.2,
+        class: "CONFIRMED",
+        confidence: 0.88,
+      },
+      {
+        id: "KOI-008",
+        orbital_period: 5.91,
+        transit_duration: 2.3,
+        planet_radius: 1.9,
+        class: "APC",
+        confidence: 0.71,
+      },
     ];
-    
+
     setResults({
       rows: mockRows,
       summary: {
-        CONFIRMED: mockRows.filter(r => r.class === "CONFIRMED").length,
-        PC: mockRows.filter(r => r.class === "PC").length,
-        FP: mockRows.filter(r => r.class === "FP").length,
-        APC: mockRows.filter(r => r.class === "APC").length,
+        CONFIRMED: mockRows.filter((r) => r.class === "CONFIRMED").length,
+        PC: mockRows.filter((r) => r.class === "PC").length,
+        FP: mockRows.filter((r) => r.class === "FP").length,
+        APC: mockRows.filter((r) => r.class === "APC").length,
         KP: 0,
       },
       total: mockRows.length,
     });
-    
+
     setIsProcessing(false);
     toast({
       title: "Classificação completa!",
@@ -78,16 +159,18 @@ const Classificacao = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      
       <main className="container pt-24 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold mb-2">Classificação de Exoplanetas</h1>
+          <h1 className="text-4xl font-bold mb-2">
+            Classificação de Exoplanetas
+          </h1>
           <p className="text-xl text-muted-foreground">
-            Faça upload do seu CSV e classifique candidatos usando nosso modelo ExoSight
+            Faça upload do seu CSV e classifique candidatos usando nosso modelo
+            Specttra
           </p>
         </motion.div>
 
@@ -148,8 +231,17 @@ const Classificacao = () => {
                     Colunas Esperadas
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {["orbital_period", "transit_duration", "planet_radius", "depth_ppm", "snr", "impact_parameter"].map(col => (
-                      <Badge key={col} variant="secondary">{col}</Badge>
+                    {[
+                      "orbital_period",
+                      "transit_duration",
+                      "planet_radius",
+                      "depth_ppm",
+                      "snr",
+                      "impact_parameter",
+                    ].map((col) => (
+                      <Badge key={col} variant="secondary">
+                        {col}
+                      </Badge>
                     ))}
                   </div>
                 </div>
@@ -161,7 +253,8 @@ const Classificacao = () => {
                 <CardHeader>
                   <CardTitle>Threshold de Decisão</CardTitle>
                   <CardDescription>
-                    Ajuste a sensibilidade da classificação (threshold: {threshold[0].toFixed(2)})
+                    Ajuste a sensibilidade da classificação (threshold:{" "}
+                    {threshold[0].toFixed(2)})
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -183,7 +276,7 @@ const Classificacao = () => {
 
             {file && !isProcessing && !results && (
               <Button onClick={handleClassify} size="lg" className="w-full">
-                Classificar com ExoSight
+                Classificar com Specttra
               </Button>
             )}
 
@@ -193,7 +286,9 @@ const Classificacao = () => {
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
-                      <span className="text-sm font-medium">Processando dados...</span>
+                      <span className="text-sm font-medium">
+                        Processando dados...
+                      </span>
                     </div>
                     <Progress value={66} />
                   </div>
@@ -216,8 +311,12 @@ const Classificacao = () => {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {Object.entries(results.summary).map(([label, count]) => (
                       <div key={label} className="bg-muted rounded-lg p-4">
-                        <div className="text-2xl font-bold">{count as number}</div>
-                        <div className="text-sm text-muted-foreground">{label}</div>
+                        <div className="text-2xl font-bold">
+                          {count as number}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {label}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -231,22 +330,34 @@ const Classificacao = () => {
                           <TableHead>Duração Trânsito</TableHead>
                           <TableHead>Raio Planeta</TableHead>
                           <TableHead>Classe</TableHead>
-                          <TableHead className="text-right">Confiança</TableHead>
+                          <TableHead className="text-right">
+                            Confiança
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {results.rows.map((row: any) => (
                           <TableRow key={row.id}>
-                            <TableCell className="font-medium">{row.id}</TableCell>
-                            <TableCell>{row.orbital_period.toFixed(2)} dias</TableCell>
-                            <TableCell>{row.transit_duration.toFixed(2)} h</TableCell>
-                            <TableCell>{row.planet_radius.toFixed(2)} R⊕</TableCell>
+                            <TableCell className="font-medium">
+                              {row.id}
+                            </TableCell>
                             <TableCell>
-                              <Badge 
+                              {row.orbital_period.toFixed(2)} dias
+                            </TableCell>
+                            <TableCell>
+                              {row.transit_duration.toFixed(2)} h
+                            </TableCell>
+                            <TableCell>
+                              {row.planet_radius.toFixed(2)} R⊕
+                            </TableCell>
+                            <TableCell>
+                              <Badge
                                 variant={
-                                  row.class === "CONFIRMED" ? "default" : 
-                                  row.class === "PC" ? "secondary" : 
-                                  "outline"
+                                  row.class === "CONFIRMED"
+                                    ? "default"
+                                    : row.class === "PC"
+                                      ? "secondary"
+                                      : "outline"
                                 }
                               >
                                 {row.class}
@@ -283,8 +394,8 @@ const Classificacao = () => {
               </CardHeader>
               <CardContent className="text-sm space-y-2">
                 <p className="text-muted-foreground">
-                  O modelo ExoSight foi treinado com dados de missões Kepler, K2 e TESS,
-                  usando método de detecção por trânsito.
+                  O modelo Specttra foi treinado com dados de missões Kepler, K2
+                  e TESS, usando método de detecção por trânsito.
                 </p>
                 <div className="space-y-1">
                   <div className="flex justify-between">
@@ -310,15 +421,25 @@ const Classificacao = () => {
               <CardContent className="space-y-2 text-sm">
                 <div>
                   <Badge className="mb-1">CONFIRMED</Badge>
-                  <p className="text-muted-foreground text-xs">Planeta confirmado</p>
+                  <p className="text-muted-foreground text-xs">
+                    Planeta confirmado
+                  </p>
                 </div>
                 <div>
-                  <Badge variant="secondary" className="mb-1">PC</Badge>
-                  <p className="text-muted-foreground text-xs">Planet Candidate</p>
+                  <Badge variant="secondary" className="mb-1">
+                    PC
+                  </Badge>
+                  <p className="text-muted-foreground text-xs">
+                    Planet Candidate
+                  </p>
                 </div>
                 <div>
-                  <Badge variant="outline" className="mb-1">FP</Badge>
-                  <p className="text-muted-foreground text-xs">False Positive</p>
+                  <Badge variant="outline" className="mb-1">
+                    FP
+                  </Badge>
+                  <p className="text-muted-foreground text-xs">
+                    False Positive
+                  </p>
                 </div>
               </CardContent>
             </Card>
