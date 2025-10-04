@@ -55,6 +55,88 @@ const Classificacao = () => {
     }
   };
 
+  const validateCSVColumns = async (file: File): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        const firstLine = text.split("\n")[0];
+        const columns = firstLine
+          .split(",")
+          .map((col) => col.trim().replace(/['"]/g, ""));
+
+        const requiredColumns = [
+          "transit_id",
+          "disposition",
+          "pl_period",
+          "pl_transit_duration",
+          "pl_transit_depth",
+          "pl_radius",
+          "pl_eq_temp",
+          "pl_insolation_flux",
+          "st_eff_temp",
+          "st_radius",
+          "st_logg",
+          "ra",
+          "dec",
+        ];
+
+        const missingColumns = requiredColumns.filter(
+          (col) => !columns.includes(col)
+        );
+
+        if (missingColumns.length > 0) {
+          toast({
+            title: "Erro de Validação",
+            description: `Colunas faltando: ${missingColumns.join(", ")}`,
+            variant: "destructive",
+          });
+          resolve(false);
+        } else {
+          toast({
+            title: "Validação OK",
+            description: "Todas as colunas necessárias foram encontradas!",
+          });
+          resolve(true);
+        }
+      };
+
+      reader.onerror = () => {
+        toast({
+          title: "Erro ao ler arquivo",
+          description: "Não foi possível ler o arquivo CSV.",
+          variant: "destructive",
+        });
+        reject(false);
+      };
+
+      reader.readAsText(file);
+    });
+  };
+
+  const sendCSVToAPI = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("mission", mission);
+    formData.append("threshold", threshold[0].toString());
+
+    const response = await fetch("http://localhost:8000/api/v1/predict", {
+      method: "POST",
+      body: formData,
+      headers: {
+        // Não definir Content-Type, deixar o browser definir com boundary
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Erro na API: ${response.status} - ${errorData}`);
+    }
+
+    return await response.json();
+  };
+
   const handleClassify = async () => {
     if (!file) {
       toast({
@@ -67,94 +149,74 @@ const Classificacao = () => {
 
     setIsProcessing(true);
 
-    // Simular processamento
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    try {
+      // Validar colunas do CSV
+      const isValid = await validateCSVColumns(file);
 
-    // Simular resultados linha por linha do CSV
-    const mockRows = [
-      {
-        id: "KOI-001",
-        orbital_period: 3.52,
-        transit_duration: 2.1,
-        planet_radius: 1.8,
-        class: "CONFIRMED",
-        confidence: 0.94,
-      },
-      {
-        id: "KOI-002",
-        orbital_period: 10.23,
-        transit_duration: 3.5,
-        planet_radius: 2.3,
-        class: "PC",
-        confidence: 0.78,
-      },
-      {
-        id: "KOI-003",
-        orbital_period: 1.89,
-        transit_duration: 1.2,
-        planet_radius: 0.9,
-        class: "FP",
-        confidence: 0.67,
-      },
-      {
-        id: "KOI-004",
-        orbital_period: 15.67,
-        transit_duration: 4.1,
-        planet_radius: 3.1,
-        class: "CONFIRMED",
-        confidence: 0.91,
-      },
-      {
-        id: "KOI-005",
-        orbital_period: 7.34,
-        transit_duration: 2.8,
-        planet_radius: 1.5,
-        class: "PC",
-        confidence: 0.82,
-      },
-      {
-        id: "KOI-006",
-        orbital_period: 2.45,
-        transit_duration: 1.6,
-        planet_radius: 1.2,
-        class: "FP",
-        confidence: 0.55,
-      },
-      {
-        id: "KOI-007",
-        orbital_period: 22.18,
-        transit_duration: 5.3,
-        planet_radius: 4.2,
-        class: "CONFIRMED",
-        confidence: 0.88,
-      },
-      {
-        id: "KOI-008",
-        orbital_period: 5.91,
-        transit_duration: 2.3,
-        planet_radius: 1.9,
-        class: "APC",
-        confidence: 0.71,
-      },
-    ];
+      if (!isValid) {
+        setIsProcessing(false);
+        return;
+      }
 
-    setResults({
-      rows: mockRows,
-      summary: {
-        CONFIRMED: mockRows.filter((r) => r.class === "CONFIRMED").length,
-        PC: mockRows.filter((r) => r.class === "PC").length,
-        FP: mockRows.filter((r) => r.class === "FP").length,
-        APC: mockRows.filter((r) => r.class === "APC").length,
-        KP: 0,
-      },
-      total: mockRows.length,
-    });
+      // Enviar CSV para a API
+      const data = await sendCSVToAPI(file);
 
-    setIsProcessing(false);
-    toast({
-      title: "Classificação completa!",
-      description: `${mockRows.length} objetos classificados com sucesso.`,
-    });
+      // Garante que data seja sempre um array
+      const dataArray = Array.isArray(data) ? data : [data];
+
+      // Mapear o retorno da API para o formato esperado pela interface
+      const mappedRows = dataArray.map((item: any, index: number) => ({
+        id:
+          item.transit_id || `${mission}-${String(index + 1).padStart(3, "0")}`,
+        prediction: item.disposition.toUpperCase(),
+        confidence: item.confidence,
+        pl_period: item.planet_data.pl_period || 0,
+        pl_transit_duration: item.planet_data.pl_transit_duration || 0,
+        pl_transit_depth: item.planet_data.pl_transit_depth || 0, // em %
+        pl_transit_depth_ppm: (item.planet_data.pl_transit_depth || 0) * 10000, // converter % para ppm
+        pl_radius: item.planet_data.pl_radius || 0,
+        pl_eq_temp: item.planet_data.pl_eq_temp || 0,
+        pl_insolation_flux: item.planet_data.pl_insolation_flux || 0,
+        st_eff_temp: item.planet_data.st_eff_temp || 0,
+        st_radius: item.planet_data.st_radius || 0,
+        st_logg: item.planet_data.st_logg || 0,
+        ra: item.planet_data.ra || 0,
+        dec: item.planet_data.dec || 0,
+      }));
+
+      setResults({
+        rows: mappedRows,
+        summary: {
+          CONFIRMED: mappedRows.filter((r: any) => r.prediction === "CONFIRMED")
+            .length,
+          PC: mappedRows.filter((r: any) => r.prediction === "PC").length,
+          FP: mappedRows.filter(
+            (r: any) =>
+              r.prediction === "FP" || r.prediction === "FALSE POSITIVE"
+          ).length,
+          APC: mappedRows.filter((r: any) => r.prediction === "APC").length,
+          KP: mappedRows.filter((r: any) => r.prediction === "KP").length,
+        },
+        total: mappedRows.length,
+      });
+
+      toast({
+        title: "Classificação completa!",
+        description: `${mappedRows.length} objetos classificados com sucesso.`,
+      });
+    } catch (error) {
+      console.error("Erro ao classificar:", error);
+      toast({
+        title: "Erro na classificação",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Ocorreu um erro ao processar o arquivo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -163,14 +225,13 @@ const Classificacao = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+          className="mb-8">
           <h1 className="text-4xl font-bold mb-2">
             Classificação de Exoplanetas
           </h1>
           <p className="text-xl text-muted-foreground">
             Faça upload do seu CSV e classifique candidatos usando nosso modelo
-            Specttra
+            ExoSight
           </p>
         </motion.div>
 
@@ -180,8 +241,7 @@ const Classificacao = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="lg:col-span-2 space-y-6"
-          >
+            className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -232,12 +292,19 @@ const Classificacao = () => {
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      "orbital_period",
-                      "transit_duration",
-                      "planet_radius",
-                      "depth_ppm",
-                      "snr",
-                      "impact_parameter",
+                      "transit_id",
+                      "disposition",
+                      "pl_period",
+                      "pl_transit_duration",
+                      "pl_transit_depth",
+                      "pl_radius",
+                      "pl_eq_temp",
+                      "pl_insolation_flux",
+                      "st_eff_temp",
+                      "st_radius",
+                      "st_logg",
+                      "ra",
+                      "dec",
                     ].map((col) => (
                       <Badge key={col} variant="secondary">
                         {col}
@@ -247,32 +314,6 @@ const Classificacao = () => {
                 </div>
               </CardContent>
             </Card>
-
-            {file && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Threshold de Decisão</CardTitle>
-                  <CardDescription>
-                    Ajuste a sensibilidade da classificação (threshold:{" "}
-                    {threshold[0].toFixed(2)})
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Slider
-                    value={threshold}
-                    onValueChange={setThreshold}
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                    <span>Mais sensível</span>
-                    <span>Mais conservador</span>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {file && !isProcessing && !results && (
               <Button onClick={handleClassify} size="lg" className="w-full">
@@ -326,10 +367,12 @@ const Classificacao = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead>ID</TableHead>
-                          <TableHead>Período Orbital</TableHead>
-                          <TableHead>Duração Trânsito</TableHead>
-                          <TableHead>Raio Planeta</TableHead>
-                          <TableHead>Classe</TableHead>
+                          <TableHead>Período Orbital (dias)</TableHead>
+                          <TableHead>Duração Trânsito (h)</TableHead>
+                          <TableHead>Profundidade (ppm)</TableHead>
+                          <TableHead>Raio (R⊕)</TableHead>
+                          <TableHead>Temp. Eq. (K)</TableHead>
+                          <TableHead>Predição</TableHead>
                           <TableHead className="text-right">
                             Confiança
                           </TableHead>
@@ -341,26 +384,25 @@ const Classificacao = () => {
                             <TableCell className="font-medium">
                               {row.id}
                             </TableCell>
+                            <TableCell>{row.pl_period.toFixed(2)}</TableCell>
                             <TableCell>
-                              {row.orbital_period.toFixed(2)} dias
+                              {row.pl_transit_duration.toFixed(2)}
                             </TableCell>
                             <TableCell>
-                              {row.transit_duration.toFixed(2)} h
+                              {row.pl_transit_depth_ppm.toFixed(0)}
                             </TableCell>
-                            <TableCell>
-                              {row.planet_radius.toFixed(2)} R⊕
-                            </TableCell>
+                            <TableCell>{row.pl_radius.toFixed(2)}</TableCell>
+                            <TableCell>{row.pl_eq_temp.toFixed(0)}</TableCell>
                             <TableCell>
                               <Badge
                                 variant={
-                                  row.class === "CONFIRMED"
+                                  row.prediction === "CONFIRMED"
                                     ? "default"
-                                    : row.class === "PC"
-                                      ? "secondary"
-                                      : "outline"
-                                }
-                              >
-                                {row.class}
+                                    : row.prediction === "PC"
+                                    ? "secondary"
+                                    : "outline"
+                                }>
+                                {row.prediction}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-right font-semibold">
@@ -386,15 +428,14 @@ const Classificacao = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="space-y-6"
-          >
+            className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Sobre o Modelo</CardTitle>
               </CardHeader>
               <CardContent className="text-sm space-y-2">
                 <p className="text-muted-foreground">
-                  O modelo Specttra foi treinado com dados de missões Kepler, K2
+                  O modelo ExoSight foi treinado com dados de missões Kepler, K2
                   e TESS, usando método de detecção por trânsito.
                 </p>
                 <div className="space-y-1">
