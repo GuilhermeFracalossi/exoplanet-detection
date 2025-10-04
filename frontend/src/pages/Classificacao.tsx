@@ -55,6 +55,39 @@ const Classificacao = () => {
     }
   };
 
+  const parseCSV = async (file: File): Promise<any[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        const lines = text.split("\n").filter((line) => line.trim());
+        const headers = lines[0]
+          .split(",")
+          .map((col) => col.trim().replace(/['"]/g, ""));
+
+        const data = lines.slice(1).map((line) => {
+          const values = line.split(",").map((val) => val.trim());
+          const row: any = {};
+          headers.forEach((header, index) => {
+            const value = values[index];
+            // Tentar converter para número, senão manter como string
+            row[header] = isNaN(Number(value)) ? value : Number(value);
+          });
+          return row;
+        });
+
+        resolve(data);
+      };
+
+      reader.onerror = () => {
+        reject(new Error("Erro ao ler o arquivo CSV"));
+      };
+
+      reader.readAsText(file);
+    });
+  };
+
   const validateCSVColumns = async (file: File): Promise<boolean> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -156,30 +189,56 @@ const Classificacao = () => {
       }
 
       // Enviar CSV para a API
-      const data = await sendCSVToAPI(file);
+      const apiData = await sendCSVToAPI(file);
 
-      // Garante que data seja sempre um array
-      const dataArray = Array.isArray(data) ? data : [data];
+      // Ler dados completos do CSV
+      const csvData = await parseCSV(file);
 
-      // Mapear o retorno da API para o formato esperado pela interface
-      const mappedRows = dataArray.map((item: any, index: number) => ({
-        id:
-          item.transit_id || `${mission}-${String(index + 1).padStart(3, "0")}`,
-        prediction: item.disposition.toUpperCase(),
-        confidence: item.confidence,
-        pl_period: item.planet_data.pl_period || 0,
-        pl_transit_duration: item.planet_data.pl_transit_duration || 0,
-        pl_transit_depth: item.planet_data.pl_transit_depth || 0, // em %
-        pl_transit_depth_ppm: (item.planet_data.pl_transit_depth || 0) * 10000, // converter % para ppm
-        pl_radius: item.planet_data.pl_radius || 0,
-        pl_eq_temp: item.planet_data.pl_eq_temp || 0,
-        pl_insolation_flux: item.planet_data.pl_insolation_flux || 0,
-        st_eff_temp: item.planet_data.st_eff_temp || 0,
-        st_radius: item.planet_data.st_radius || 0,
-        st_logg: item.planet_data.st_logg || 0,
-        ra: item.planet_data.ra || 0,
-        dec: item.planet_data.dec || 0,
-      }));
+      // Garante que apiData seja sempre um array
+      const apiDataArray = Array.isArray(apiData) ? apiData : [apiData];
+
+      // Combinar dados da API (predições) com dados do CSV
+      const mappedRows = apiDataArray
+        .map((apiItem: any) => {
+          // Encontrar a linha correspondente no CSV pelo transit_id
+          const csvRow = csvData.find(
+            (row) => row.transit_id === apiItem.transit_id
+          );
+
+          if (!csvRow) {
+            console.warn(
+              `Linha não encontrada no CSV para transit_id: ${apiItem.transit_id}`
+            );
+            return null;
+          }
+
+          // Mapear predição (1 = CONFIRMED, 0 = FALSE POSITIVE, etc)
+          const predictionMap: any = {
+            "1": "CONFIRMED",
+            "0": "FALSE",
+          };
+
+          return {
+            id: apiItem.transit_id,
+            prediction:
+              predictionMap[apiItem.prediction] ||
+              apiItem.prediction.toUpperCase(),
+            confidence: apiItem.confidence,
+            pl_period: csvRow.pl_period || 0,
+            pl_transit_duration: csvRow.pl_transit_duration || 0,
+            pl_transit_depth: csvRow.pl_transit_depth || 0, // em %
+            pl_transit_depth_ppm: (csvRow.pl_transit_depth || 0) * 10000, // converter % para ppm
+            pl_radius: csvRow.pl_radius || 0,
+            pl_eq_temp: csvRow.pl_eq_temp || 0,
+            pl_insolation_flux: csvRow.pl_insolation_flux || 0,
+            st_eff_temp: csvRow.st_eff_temp || 0,
+            st_radius: csvRow.st_radius || 0,
+            st_logg: csvRow.st_logg || 0,
+            ra: csvRow.ra || 0,
+            dec: csvRow.dec || 0,
+          };
+        })
+        .filter((row) => row !== null); // Remove linhas nulas
 
       setResults({
         rows: mappedRows,
@@ -290,7 +349,6 @@ const Classificacao = () => {
                   <div className="flex flex-wrap gap-2">
                     {[
                       "transit_id",
-                      "disposition",
                       "pl_period",
                       "pl_transit_duration",
                       "pl_transit_depth",
