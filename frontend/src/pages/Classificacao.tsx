@@ -16,6 +16,7 @@ import {
   Settings,
   HelpCircle,
   Info,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -70,6 +71,13 @@ const Classificacao = () => {
   const [filterPrediction, setFilterPrediction] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [pageInput, setPageInput] = useState<string>("1");
+
+  // Novos estados para visualização de dados
+  const [csvData, setCsvData] = useState<any[]>([]);
+  const [showDataPreview, setShowDataPreview] = useState(false);
+  const [previewPage, setPreviewPage] = useState(1);
+  const [previewItemsPerPage] = useState(10);
+
   const { toast } = useToast();
   useEffect(() => {
     fetchModelInfo();
@@ -118,13 +126,29 @@ const Classificacao = () => {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      toast({
-        title: "Arquivo carregado",
-        description: `${e.target.files[0].name} está pronto para validação.`,
-      });
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+
+      try {
+        // Parse CSV e armazenar dados
+        const data = await parseCSV(selectedFile);
+        setCsvData(data);
+        setShowDataPreview(true);
+        setPreviewPage(1);
+
+        toast({
+          title: "Arquivo carregado",
+          description: `${data.length} registros encontrados. Revise os dados antes de classificar.`,
+        });
+      } catch (error) {
+        toast({
+          title: "Erro ao ler arquivo",
+          description: "Não foi possível processar o arquivo CSV.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -1039,7 +1063,182 @@ const Classificacao = () => {
               </CardContent>
             </Card>
 
-            {file && !isProcessing && !results && (
+            {/* Tela de Preview dos Dados */}
+            {showDataPreview && csvData.length > 0 && !results && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}>
+                <Card className="border-blue-200 dark:border-blue-800">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <FileText className="h-5 w-5 text-blue-500" />
+                          Visualização dos Dados
+                        </CardTitle>
+                        <CardDescription>
+                          {csvData.length} registros carregados • Revise antes
+                          de classificar
+                        </CardDescription>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setShowDataPreview(false);
+                          setFile(null);
+                          setCsvData([]);
+                        }}>
+                        <X className="h-4 w-4 mr-2" />
+                        Trocar Arquivo
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Estatísticas Rápidas */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-muted rounded-lg p-3 text-center">
+                        <div className="text-2xl font-bold text-blue-600">
+                          {csvData.length}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Total de Registros
+                        </div>
+                      </div>
+                      <div className="bg-muted rounded-lg p-3 text-center">
+                        <div className="text-2xl font-bold text-green-600">
+                          {Object.keys(csvData[0] || {}).length}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Colunas
+                        </div>
+                      </div>
+                      <div className="bg-muted rounded-lg p-3 text-center">
+                        <div className="text-2xl font-bold text-purple-600">
+                          {((file?.size || 0) / 1024).toFixed(1)} KB
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Tamanho
+                        </div>
+                      </div>
+                      <div className="bg-muted rounded-lg p-3 text-center">
+                        <div className="text-2xl font-bold text-orange-600">
+                          {Math.ceil(csvData.length / previewItemsPerPage)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Páginas
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tabela de Preview */}
+                    <div className="border rounded-lg">
+                      <ScrollArea className="h-[400px]">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[50px]">#</TableHead>
+                              {Object.keys(csvData[0] || {}).map((col) => (
+                                <TableHead key={col} className="min-w-[120px]">
+                                  {col}
+                                </TableHead>
+                              ))}
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {csvData
+                              .slice(
+                                (previewPage - 1) * previewItemsPerPage,
+                                previewPage * previewItemsPerPage
+                              )
+                              .map((row, idx) => (
+                                <TableRow key={idx}>
+                                  <TableCell className="font-medium">
+                                    {(previewPage - 1) * previewItemsPerPage +
+                                      idx +
+                                      1}
+                                  </TableCell>
+                                  {Object.values(row).map(
+                                    (value: any, cellIdx) => (
+                                      <TableCell key={cellIdx}>
+                                        {typeof value === "number"
+                                          ? value.toFixed(3)
+                                          : value}
+                                      </TableCell>
+                                    )
+                                  )}
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                      </ScrollArea>
+                    </div>
+
+                    {/* Paginação do Preview */}
+                    {csvData.length > previewItemsPerPage && (
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-muted-foreground">
+                          Mostrando{" "}
+                          {(previewPage - 1) * previewItemsPerPage + 1} a{" "}
+                          {Math.min(
+                            previewPage * previewItemsPerPage,
+                            csvData.length
+                          )}{" "}
+                          de {csvData.length} registros
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPreviewPage(1)}
+                            disabled={previewPage === 1}>
+                            <ChevronsLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPreviewPage(previewPage - 1)}
+                            disabled={previewPage === 1}>
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <span className="text-sm px-4">
+                            Página {previewPage} de{" "}
+                            {Math.ceil(csvData.length / previewItemsPerPage)}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPreviewPage(previewPage + 1)}
+                            disabled={
+                              previewPage ===
+                              Math.ceil(csvData.length / previewItemsPerPage)
+                            }>
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setPreviewPage(
+                                Math.ceil(csvData.length / previewItemsPerPage)
+                              )
+                            }
+                            disabled={
+                              previewPage ===
+                              Math.ceil(csvData.length / previewItemsPerPage)
+                            }>
+                            <ChevronsRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {file && !isProcessing && !results && showDataPreview && (
               <Button onClick={handleClassify} size="lg" className="w-full">
                 Classificar com Specttra
               </Button>
