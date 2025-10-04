@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Lock,
@@ -39,7 +39,23 @@ const FineTuning = () => {
     learning_rate: 0.1,
     k_fold: 5,
   });
+  const [modelInfo, setModelInfo] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Buscar métricas reais da API (mesmo formato do Index.tsx)
+    fetch("http://localhost:8000/api/v1/metrics")
+      .then((res) => res.json())
+      .then((data) => {
+        setModelInfo(data.modelos_internos?.[0]);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Erro ao buscar métricas:", err);
+        setLoading(false);
+      });
+  }, []);
 
   if (!isPremium) {
     return (
@@ -48,8 +64,7 @@ const FineTuning = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="max-w-4xl mx-auto"
-          >
+            className="max-w-4xl mx-auto">
             <Card className="border-2 border-primary/20">
               <CardHeader className="text-center pb-8">
                 <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mb-4">
@@ -100,27 +115,54 @@ const FineTuning = () => {
                   </div>
 
                   <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-6 space-y-4">
-                    <h3 className="font-semibold">Métricas de Performance</h3>
+                    <h3 className="font-semibold">
+                      {loading
+                        ? "Carregando métricas..."
+                        : "Métricas de Performance"}
+                    </h3>
                     <div className="space-y-3">
-                      {[
-                        { label: "Accuracy", value: "94.2%" },
-                        { label: "F1-Score", value: "0.91" },
-                        { label: "ROC-AUC", value: "0.97" },
-                        { label: "PR-AUC", value: "0.93" },
-                      ].map((metric) => (
-                        <div
-                          key={metric.label}
-                          className="flex justify-between items-center"
-                        >
-                          <span className="text-sm text-muted-foreground">
-                            {metric.label}
-                          </span>
-                          <Badge variant="secondary">{metric.value}</Badge>
+                      {loading ? (
+                        <div className="text-sm text-muted-foreground text-center py-4">
+                          Carregando dados do modelo...
                         </div>
-                      ))}
+                      ) : modelInfo ? (
+                        [
+                          {
+                            label: "Accuracy",
+                            value: `${(modelInfo.Acuracia_Media * 100).toFixed(
+                              1
+                            )}%`,
+                          },
+                          {
+                            label: "F1-Score",
+                            value: modelInfo.F1_Planeta_Media.toFixed(2),
+                          },
+                          {
+                            label: "ROC-AUC",
+                            value: modelInfo.AUC_ROC_Media.toFixed(2),
+                          },
+                          {
+                            label: "PR-AUC",
+                            value: modelInfo.AUC_PRC_Media.toFixed(2),
+                          },
+                        ].map((metric) => (
+                          <div
+                            key={metric.label}
+                            className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">
+                              {metric.label}
+                            </span>
+                            <Badge variant="secondary">{metric.value}</Badge>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-sm text-muted-foreground text-center py-4">
+                          Não foi possível carregar as métricas
+                        </div>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground italic">
-                      *Métricas típicas após fine-tuning com dados customizados
+                      *Métricas atuais do modelo base Specttra
                     </p>
                   </div>
                 </div>
@@ -133,8 +175,7 @@ const FineTuning = () => {
                     <Button
                       size="lg"
                       className="text-lg px-8"
-                      onClick={() => setIsPremium(true)}
-                    >
+                      onClick={() => setIsPremium(true)}>
                       <Sparkles className="mr-2 h-5 w-5" />
                       Ativar Premium
                     </Button>
@@ -157,8 +198,7 @@ const FineTuning = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+          className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-4xl font-bold">Fine Tuning</h1>
             <Badge variant="default" className="text-sm">
@@ -269,8 +309,7 @@ const FineTuning = () => {
 
                 <Dialog
                   open={isEditingHyperparams}
-                  onOpenChange={setIsEditingHyperparams}
-                >
+                  onOpenChange={setIsEditingHyperparams}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full">
                       <Settings className="h-4 w-4 mr-2" />
@@ -368,8 +407,7 @@ const FineTuning = () => {
                             description:
                               "As configurações foram salvas com sucesso.",
                           });
-                        }}
-                      >
+                        }}>
                         Salvar Configurações
                       </Button>
                     </div>
@@ -421,8 +459,7 @@ const FineTuning = () => {
                     <Badge
                       key={feature}
                       variant="secondary"
-                      className="text-xs"
-                    >
+                      className="text-xs">
                       {feature}
                     </Badge>
                   ))}
