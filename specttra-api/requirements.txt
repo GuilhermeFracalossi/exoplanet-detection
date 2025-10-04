@@ -4,3 +4,8 @@ pydantic==2.8.2
 pydantic-settings==2.3.1
 numpy
 joblib
+pandas
+python-multipart
+xgboost
+lightgbm
+scikit-learn
