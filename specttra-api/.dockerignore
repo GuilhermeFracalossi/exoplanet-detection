@@ -4,5 +4,7 @@ __pycache__/
 *.pyd
 .venv/
 venv/
-.envs
+.env
+.git
+.gitignore
 *.ipynb
