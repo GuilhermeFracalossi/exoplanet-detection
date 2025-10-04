@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Sparkles, Menu, X } from "lucide-react"; // Importe os ícones Menu e X
+import { Sparkles, Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
+import { ThemeToggle } from "./ThemeToggle";
 
 export const Navbar = () => {
   const location = useLocation();
@@ -46,13 +47,15 @@ export const Navbar = () => {
               {link.label}
             </Link>
           ))}
+          <ThemeToggle />
           <Button variant="default" size="sm" asChild>
             <Link to="/classificacao">Começar</Link>
           </Button>
         </div>
 
-        {/* Botão Hambúrguer para Mobile */}
-        <div className="md:hidden">
+        {/* Botão Hambúrguer e Theme Toggle para Mobile */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
           <Button
             variant="ghost"
             size="icon"
