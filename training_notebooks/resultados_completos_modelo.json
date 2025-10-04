@@ -1,16 +1,16 @@
 {
-    "modelos_internos": [
-        {
-            "Modelo": "Specttra-1",
-            "AUC ROC Média": 0.9072015875256294,
-            "AUC PRC Média": 0.9341440640808341,
-            "Acurácia Média": 0.8430716632568602,
-            "Precisão (Planeta) Média": 0.8737987163791793,
-            "Recall (Planeta) Média": 0.8831469435180981,
-            "Precisão (Non Planet) Média": 0.7863332179285427,
-            "Recall (Non Planet) Média": 0.7712066269959742,
-            "F1 (Planeta) Média": 0.8784241638964321,
-            "F1 (Non Planet) Média": 0.7786268306153357
-        }
-    ]
+  "modelos_internos": [
+    {
+      "Modelo": "Specttra-1",
+      "AUC ROC Média": 0.9072015875256294,
+      "AUC PRC Média": 0.9341440640808341,
+      "Acurácia Média": 0.8430716632568602,
+      "Precisão (Planeta) Média": 0.8737987163791793,
+      "Recall (Planeta) Média": 0.8831469435180981,
+      "Precisão (Non Planet) Média": 0.7863332179285427,
+      "Recall (Non Planet) Média": 0.7712066269959742,
+      "F1 (Planeta) Média": 0.8784241638964321,
+      "F1 (Non Planet) Média": 0.7786268306153357
+    }
+  ]
 }

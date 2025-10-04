@@ -76,8 +76,7 @@ const Index = () => {
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
+              transition={{ duration: 0.8 }}>
               <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                 Detecte Exoplanetas com{" "}
                 <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
@@ -106,8 +105,7 @@ const Index = () => {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8 }}
-              className="relative"
-            >
+              className="relative">
               <div className="relative animate-float">
                 <img
                   src={heroImage}
@@ -129,8 +127,7 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
-          >
+            className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4">
               Performance do Modelo Specttra
             </h2>
@@ -149,7 +146,11 @@ const Index = () => {
             />
             <MetricCard
               title={loading ? "Carregando..." : "Acurácia do Modelo"}
-              value={loading ? "..." : `${(realMetrics?.Acuracia_Media * 100).toFixed(1)}%`}
+              value={
+                loading
+                  ? "..."
+                  : `${(realMetrics?.Acuracia_Media * 100).toFixed(1)}%`
+              }
               description="Specttra Model"
               icon={<TrendingUp className="h-4 w-4" />}
               delay={0.1}
@@ -167,50 +168,8 @@ const Index = () => {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-card rounded-2xl p-8 shadow-lg"
-          >
+            className="bg-card rounded-2xl p-8 shadow-lg">
             <h3 className="text-2xl font-bold mb-6">
-              {loading ? "Carregando métricas..." : `Métricas do Modelo: ${realMetrics?.Modelo || "Specttra"}`}
-            </h3>
-            {!loading && realMetrics && (
-              <div className="grid md:grid-cols-2 gap-8 mb-8">
-                <div>
-                  <h4 className="text-lg font-semibold mb-4 text-primary">Métricas Gerais</h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <span className="text-muted-foreground">ROC-AUC:</span>
-                      <span className="font-bold text-lg">{(realMetrics.AUC_ROC_Media * 100).toFixed(2)}%</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <span className="text-muted-foreground">PR-AUC:</span>
-                      <span className="font-bold text-lg">{(realMetrics.AUC_PRC_Media * 100).toFixed(2)}%</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <span className="text-muted-foreground">Acurácia:</span>
-                      <span className="font-bold text-lg">{(realMetrics.Acuracia_Media * 100).toFixed(2)}%</span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold mb-4 text-secondary">Detecção de Planetas</h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <span className="text-muted-foreground">Precisão:</span>
-                      <span className="font-bold text-lg">{(realMetrics.Precisao_Planeta_Media * 100).toFixed(2)}%</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <span className="text-muted-foreground">Recall:</span>
-                      <span className="font-bold text-lg">{(realMetrics.Recall_Planeta_Media * 100).toFixed(2)}%</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <span className="text-muted-foreground">F1-Score:</span>
-                      <span className="font-bold text-lg">{(realMetrics.F1_Planeta_Media * 100).toFixed(2)}%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <h3 className="text-2xl font-bold mb-6 mt-8">
               Descobertas e Performance por Missão
             </h3>
             <ResponsiveContainer width="100%" height={400}>
@@ -257,8 +216,7 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-card rounded-2xl p-6 shadow-lg"
-              >
+                className="bg-card rounded-2xl p-6 shadow-lg">
                 <h4 className="text-lg font-bold mb-4">{mission.mission}</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -299,8 +257,7 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
-          >
+            className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4">Como Funciona?</h2>
             <p className="text-xl text-muted-foreground">
               Três passos simples para classificar seus dados
@@ -334,8 +291,7 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.2 }}
-                className="relative bg-card rounded-2xl p-8 shadow-lg"
-              >
+                className="relative bg-card rounded-2xl p-8 shadow-lg">
                 <div className="absolute -top-6 left-8 w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg">
                   {item.step}
                 </div>
@@ -349,8 +305,7 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mt-12"
-          >
+            className="text-center mt-12">
             <Button size="lg" asChild>
               <Link to="/classificacao">
                 Começar Agora

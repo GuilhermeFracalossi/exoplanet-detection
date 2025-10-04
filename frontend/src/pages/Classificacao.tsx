@@ -54,7 +54,9 @@ const Classificacao = () => {
   const fetchModelInfo = async () => {
     try {
       setLoadingModelInfo(true);
-      const response = await fetch("http://localhost:8000/api/v1/model/info", {
+
+      // Buscar métricas da mesma forma que o Index.tsx
+      const response = await fetch("http://localhost:8000/api/v1/metrics", {
         method: "GET",
       });
 
@@ -65,7 +67,25 @@ const Classificacao = () => {
       }
 
       const data = await response.json();
-      setModelInfo(data);
+
+      // Extrair o primeiro modelo interno (mesmo formato do Index.tsx)
+      const modelo = data.modelos_internos?.[0];
+
+      if (modelo) {
+        // Mapear para o formato esperado pela interface
+        setModelInfo({
+          name: modelo.Modelo || "ExoSight Model",
+          description:
+            "Modelo de Machine Learning treinado com dados de missões espaciais Kepler, K2 e TESS",
+          metrics: {
+            roc_auc: modelo.AUC_ROC_Media || 0,
+            accuracy: modelo.Acuracia_Media || 0,
+            f1_score: modelo.F1_Planeta_Media || 0,
+          },
+        });
+      } else {
+        setModelInfo(null);
+      }
     } catch (error) {
       console.warn("Erro ao buscar informações do modelo:", error);
       setModelInfo(null);
