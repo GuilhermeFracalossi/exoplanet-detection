@@ -13,6 +13,9 @@ import {
   Filter,
   LayoutGrid,
   TableIcon,
+  Settings,
+  HelpCircle,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,12 +28,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  } from "@/components/ui/select";
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -48,7 +59,6 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const Classificacao = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [mission, setMission] = useState<string>("KOI");
   const [threshold, setThreshold] = useState([0.5]);
   const [classificationThreshold, setClassificationThreshold] = useState([0.7]); // Threshold para classificação dinâmica
   const [isProcessing, setIsProcessing] = useState(false);
@@ -60,7 +70,8 @@ const Classificacao = () => {
   const [filterPrediction, setFilterPrediction] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [pageInput, setPageInput] = useState<string>("1");
-  const { toast } = useToast();  useEffect(() => {
+  const { toast } = useToast();
+  useEffect(() => {
     fetchModelInfo();
   }, []);
 
@@ -210,7 +221,7 @@ const Classificacao = () => {
   const sendCSVToAPI = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("mission", mission);
+    formData.append("mission", "Custom"); // Default mission
     formData.append("threshold", threshold[0].toString());
 
     const response = await fetch("http://localhost:8000/api/v1/predict", {
@@ -338,28 +349,28 @@ const Classificacao = () => {
   // Filtrar e paginar resultados
   const getFilteredResults = () => {
     if (!results) return [];
-    
+
     let filtered = results.rows;
-    
+
     if (filterPrediction !== "all") {
       filtered = filtered.filter((row: any) => {
         const dynamicPrediction = getDynamicPrediction(row.confidence);
         return dynamicPrediction === filterPrediction;
       });
     }
-    
+
     return filtered;
   };
 
   // Função para determinar a classificação baseada no threshold
   const getDynamicPrediction = (confidence: number): string => {
     const thresholdValue = classificationThreshold[0];
-    
+
     if (confidence >= thresholdValue) {
       return "PLANETA CONFIRMADO";
     } else if (confidence >= thresholdValue - 0.15) {
       return "CANDIDATO FORTE";
-    } else if (confidence >= thresholdValue - 0.30) {
+    } else if (confidence >= thresholdValue - 0.3) {
       return "CANDIDATO FRACO";
     } else {
       return "FALSO POSITIVO";
@@ -369,19 +380,19 @@ const Classificacao = () => {
   // Calcular resumo dinâmico baseado no threshold
   const getDynamicSummary = () => {
     if (!results) return {};
-    
+
     const summary: any = {
       "PLANETA CONFIRMADO": 0,
       "CANDIDATO FORTE": 0,
       "CANDIDATO FRACO": 0,
       "FALSO POSITIVO": 0,
     };
-    
+
     results.rows.forEach((row: any) => {
       const prediction = getDynamicPrediction(row.confidence);
       summary[prediction]++;
     });
-    
+
     return summary;
   };
 
@@ -413,6 +424,178 @@ const Classificacao = () => {
       toast({
         title: "Página inválida",
         description: `Por favor, insira um número entre 1 e ${totalPages}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportCSV = () => {
+    if (!results || !results.rows || results.rows.length === 0) {
+      toast({
+        title: "Sem dados para exportar",
+        description: "Não há resultados para exportar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Cabeçalhos do CSV
+      const headers = [
+        "ID",
+        "Classificação",
+        "Confiança (%)",
+        "Período Orbital (dias)",
+        "Duração Trânsito (h)",
+        "Profundidade (ppm)",
+        "Raio (R⊕)",
+        "Temp. Eq. (K)",
+        "Fluxo Insolação",
+        "Temp. Estelar (K)",
+        "Raio Estelar (R☉)",
+        "Log g Estelar",
+      ];
+
+      // Criar linhas do CSV com classificação dinâmica
+      const csvRows = results.rows.map((row: any) => {
+        const dynamicPrediction = getDynamicPrediction(row.confidence);
+        return [
+          row.id,
+          dynamicPrediction,
+          (row.confidence * 100).toFixed(1),
+          row.pl_period.toFixed(2),
+          row.pl_transit_duration.toFixed(2),
+          row.pl_transit_depth_ppm.toFixed(0),
+          row.pl_radius.toFixed(2),
+          row.pl_eq_temp.toFixed(0),
+          row.pl_insolation_flux.toFixed(2),
+          row.st_eff_temp.toFixed(0),
+          row.st_radius.toFixed(2),
+          row.st_logg.toFixed(2),
+        ].join(",");
+      });
+
+      // Juntar cabeçalhos e linhas
+      const csvContent = [headers.join(","), ...csvRows].join("\n");
+
+      // Criar Blob e fazer download
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, "-")
+        .slice(0, -5);
+      const filename = `exoplanetas_classificacao_${timestamp}.csv`;
+
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Exportação concluída!",
+        description: `${results.rows.length} resultados exportados para ${filename}`,
+      });
+    } catch (error) {
+      console.error("Erro ao exportar CSV:", error);
+      toast({
+        title: "Erro na exportação",
+        description: "Não foi possível exportar os resultados.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadExampleCSV = () => {
+    try {
+      // Dados de exemplo realistas
+      const exampleData = [
+        {
+          transit_id: "KOI-001.01",
+          pl_period: 10.85,
+          pl_transit_duration: 2.8,
+          pl_transit_depth: 84.0,
+          pl_radius: 1.05,
+          pl_eq_temp: 285.0,
+          pl_insolation_flux: 1.2,
+          st_eff_temp: 5750.0,
+          st_radius: 1.02,
+          st_logg: 4.43,
+        },
+        {
+          transit_id: "TESS-123.02",
+          pl_period: 3.14,
+          pl_transit_duration: 1.5,
+          pl_transit_depth: 120.0,
+          pl_radius: 2.1,
+          pl_eq_temp: 620.0,
+          pl_insolation_flux: 15.5,
+          st_eff_temp: 6100.0,
+          st_radius: 1.35,
+          st_logg: 4.21,
+        },
+        {
+          transit_id: "K2-42.01",
+          pl_period: 365.25,
+          pl_transit_duration: 6.2,
+          pl_transit_depth: 45.0,
+          pl_radius: 0.95,
+          pl_eq_temp: 255.0,
+          pl_insolation_flux: 1.0,
+          st_eff_temp: 5778.0,
+          st_radius: 1.0,
+          st_logg: 4.44,
+        },
+      ];
+
+      // Gerar CSV
+      const headers = [
+        "transit_id",
+        "pl_period",
+        "pl_transit_duration",
+        "pl_transit_depth",
+        "pl_radius",
+        "pl_eq_temp",
+        "pl_insolation_flux",
+        "st_eff_temp",
+        "st_radius",
+        "st_logg",
+      ];
+
+      const csvRows = [
+        headers.join(","),
+        ...exampleData.map((row) =>
+          headers.map((header) => row[header as keyof typeof row]).join(",")
+        ),
+      ];
+
+      const csvContent = csvRows.join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+      // Download
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+
+      link.setAttribute("href", url);
+      link.setAttribute("download", "exoplanetas_template_exemplo.csv");
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "CSV de exemplo baixado!",
+        description: "Use este arquivo como template para suas análises.",
+      });
+    } catch (error) {
+      console.error("Erro ao gerar CSV de exemplo:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível gerar o CSV de exemplo.",
         variant: "destructive",
       });
     }
@@ -530,21 +713,6 @@ const Classificacao = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="mission">Missão (contexto)</Label>
-                  <Select value={mission} onValueChange={setMission}>
-                    <SelectTrigger id="mission">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="KOI">Kepler (KOI)</SelectItem>
-                      <SelectItem value="K2">K2</SelectItem>
-                      <SelectItem value="TESS">TESS</SelectItem>
-                      <SelectItem value="Custom">Custom</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
                   <Label htmlFor="file">Arquivo CSV/Parquet</Label>
                   <Input
                     id="file"
@@ -562,10 +730,293 @@ const Classificacao = () => {
                 </div>
 
                 <div className="bg-muted/50 rounded-lg p-4">
-                  <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" />
-                    Colunas Esperadas
-                  </h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-sm flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4" />
+                      Colunas Obrigatórias do CSV
+                    </h4>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 gap-2">
+                          <HelpCircle className="h-4 w-4" />
+                          Ver Detalhes
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl flex items-center gap-2">
+                            <Info className="h-6 w-6 text-primary" />
+                            Estrutura do CSV para Classificação
+                          </DialogTitle>
+                          <DialogDescription className="text-base">
+                            Seu arquivo CSV deve conter as seguintes colunas com
+                            dados de trânsito planetário. Baixe o arquivo de
+                            exemplo para começar rapidamente.
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-4 mt-4">
+                          <div className="grid gap-4">
+                            {/* Transit ID */}
+                            <div className="border rounded-lg p-4 space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <Badge variant="outline" className="mb-2">
+                                    Identificador
+                                  </Badge>
+                                  <h4 className="font-semibold text-lg">
+                                    transit_id
+                                  </h4>
+                                </div>
+                                <Badge>Texto</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Identificador único do candidato (ex:
+                                "K00001.01", "TESS-123", etc.)
+                              </p>
+                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
+                                Exemplo: "KOI-001", "K2-42b", "TOI-700"
+                              </div>
+                            </div>
+
+                            {/* Planet Period */}
+                            <div className="border rounded-lg p-4 space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <Badge variant="outline" className="mb-2">
+                                    Período Orbital
+                                  </Badge>
+                                  <h4 className="font-semibold text-lg">
+                                    pl_period
+                                  </h4>
+                                </div>
+                                <Badge>Numérico</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Período orbital do planeta em dias. Tempo que o
+                                planeta leva para completar uma órbita.
+                              </p>
+                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
+                                Exemplo: 365.25 (dias) | Unidade: dias
+                              </div>
+                            </div>
+
+                            {/* Transit Duration */}
+                            <div className="border rounded-lg p-4 space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <Badge variant="outline" className="mb-2">
+                                    Duração do Trânsito
+                                  </Badge>
+                                  <h4 className="font-semibold text-lg">
+                                    pl_transit_duration
+                                  </h4>
+                                </div>
+                                <Badge>Numérico</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Duração do trânsito em horas. Tempo que o
+                                planeta leva para cruzar o disco estelar.
+                              </p>
+                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
+                                Exemplo: 3.2 (horas) | Unidade: horas
+                              </div>
+                            </div>
+
+                            {/* Transit Depth */}
+                            <div className="border rounded-lg p-4 space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <Badge variant="outline" className="mb-2">
+                                    Profundidade do Trânsito
+                                  </Badge>
+                                  <h4 className="font-semibold text-lg">
+                                    pl_transit_depth
+                                  </h4>
+                                </div>
+                                <Badge>Numérico</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Diminuição relativa do brilho estelar durante o
+                                trânsito (em partes por milhão).
+                              </p>
+                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
+                                Exemplo: 84.0 (ppm) | Unidade: partes por milhão
+                              </div>
+                            </div>
+
+                            {/* Planet Radius */}
+                            <div className="border rounded-lg p-4 space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <Badge variant="outline" className="mb-2">
+                                    Raio Planetário
+                                  </Badge>
+                                  <h4 className="font-semibold text-lg">
+                                    pl_radius
+                                  </h4>
+                                </div>
+                                <Badge>Numérico</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Raio do planeta em raios terrestres (R⊕). Terra
+                                = 1.0
+                              </p>
+                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
+                                Exemplo: 1.0 (raios terrestres) | Terra = 1.0,
+                                Júpiter ≈ 11.2
+                              </div>
+                            </div>
+
+                            {/* Equilibrium Temperature */}
+                            <div className="border rounded-lg p-4 space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <Badge variant="outline" className="mb-2">
+                                    Temperatura de Equilíbrio
+                                  </Badge>
+                                  <h4 className="font-semibold text-lg">
+                                    pl_eq_temp
+                                  </h4>
+                                </div>
+                                <Badge>Numérico</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Temperatura de equilíbrio do planeta em Kelvin,
+                                assumindo albedo zero.
+                              </p>
+                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
+                                Exemplo: 288 (K) | Terra ≈ 255K, zona habitável
+                                ≈ 200-300K
+                              </div>
+                            </div>
+
+                            {/* Insolation Flux */}
+                            <div className="border rounded-lg p-4 space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <Badge variant="outline" className="mb-2">
+                                    Fluxo de Insolação
+                                  </Badge>
+                                  <h4 className="font-semibold text-lg">
+                                    pl_insolation_flux
+                                  </h4>
+                                </div>
+                                <Badge>Numérico</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Fluxo estelar incidente no planeta em unidades
+                                de fluxo terrestre.
+                              </p>
+                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
+                                Exemplo: 1.0 (fluxo terrestre) | Terra = 1.0
+                              </div>
+                            </div>
+
+                            {/* Stellar Effective Temperature */}
+                            <div className="border rounded-lg p-4 space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <Badge variant="outline" className="mb-2">
+                                    Temperatura Estelar
+                                  </Badge>
+                                  <h4 className="font-semibold text-lg">
+                                    st_eff_temp
+                                  </h4>
+                                </div>
+                                <Badge>Numérico</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Temperatura efetiva da estrela hospedeira em
+                                Kelvin.
+                              </p>
+                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
+                                Exemplo: 5778 (K) | Sol = 5778K
+                              </div>
+                            </div>
+
+                            {/* Stellar Radius */}
+                            <div className="border rounded-lg p-4 space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <Badge variant="outline" className="mb-2">
+                                    Raio Estelar
+                                  </Badge>
+                                  <h4 className="font-semibold text-lg">
+                                    st_radius
+                                  </h4>
+                                </div>
+                                <Badge>Numérico</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Raio da estrela hospedeira em raios solares
+                                (R☉). Sol = 1.0
+                              </p>
+                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
+                                Exemplo: 1.0 (raios solares) | Sol = 1.0
+                              </div>
+                            </div>
+
+                            {/* Stellar Surface Gravity */}
+                            <div className="border rounded-lg p-4 space-y-2">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <Badge variant="outline" className="mb-2">
+                                    Gravidade Superficial
+                                  </Badge>
+                                  <h4 className="font-semibold text-lg">
+                                    st_logg
+                                  </h4>
+                                </div>
+                                <Badge>Numérico</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Logaritmo da gravidade superficial da estrela
+                                (log₁₀[cm/s²]).
+                              </p>
+                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
+                                Exemplo: 4.44 (log₁₀[cm/s²]) | Sol ≈ 4.44
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-3 pt-4 border-t">
+                            <Button
+                              onClick={handleDownloadExampleCSV}
+                              className="flex-1 gap-2">
+                              <Download className="h-4 w-4" />
+                              Baixar CSV de Exemplo
+                            </Button>
+                          </div>
+
+                          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                            <h5 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                              <Info className="h-4 w-4" />
+                              Dicas Importantes
+                            </h5>
+                            <ul className="text-sm space-y-1 text-muted-foreground list-disc list-inside">
+                              <li>
+                                Todas as colunas são obrigatórias para o modelo
+                                funcionar
+                              </li>
+                              <li>
+                                Valores numéricos devem usar ponto (.) como
+                                separador decimal
+                              </li>
+                              <li>
+                                O arquivo deve estar em formato CSV com
+                                separador por vírgula
+                              </li>
+                              <li>
+                                Certifique-se de que não há valores vazios ou
+                                inválidos
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {[
                       "transit_id",
@@ -621,25 +1072,24 @@ const Classificacao = () => {
                       </CardTitle>
                       <CardDescription>
                         {getFilteredResults().length} de {results.total} objetos{" "}
-                        {filterPrediction !== "all" && `(filtrados por ${filterPrediction})`}
+                        {filterPrediction !== "all" &&
+                          `(filtrados por ${filterPrediction})`}
                       </CardDescription>
                     </div>
-                    
+
                     {/* Toggle de visualização */}
                     <div className="flex gap-2">
                       <Button
                         variant={viewMode === "table" ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setViewMode("table")}
-                      >
+                        onClick={() => setViewMode("table")}>
                         <TableIcon className="h-4 w-4 mr-2" />
                         Tabela
                       </Button>
                       <Button
                         variant={viewMode === "cards" ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setViewMode("cards")}
-                      >
+                        onClick={() => setViewMode("cards")}>
                         <LayoutGrid className="h-4 w-4 mr-2" />
                         Cards
                       </Button>
@@ -647,98 +1097,59 @@ const Classificacao = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Controle de Threshold Dinâmico */}
-                  <div className="bg-primary/5 border-2 border-primary/20 rounded-lg p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold text-lg">Threshold de Classificação</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Ajuste a confiança mínima para classificar como planeta confirmado
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-3xl font-bold text-primary">
-                          {(classificationThreshold[0] * 100).toFixed(0)}%
-                        </div>
-                        <div className="text-xs text-muted-foreground">Confiança mínima</div>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Slider
-                        value={classificationThreshold}
-                        onValueChange={(value) => {
-                          setClassificationThreshold(value);
-                          setCurrentPage(1); // Reset para primeira página
-                        }}
-                        min={0.3}
-                        max={0.95}
-                        step={0.05}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Menos restritivo (30%)</span>
-                        <span>Mais restritivo (95%)</span>
-                      </div>
-                    </div>
-
-                    {/* Legenda de classificação */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-2">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="default" className="whitespace-nowrap">CONFIRMADO</Badge>
-                        <span className="text-xs">≥ {(classificationThreshold[0] * 100).toFixed(0)}%</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="whitespace-nowrap">FORTE</Badge>
-                        <span className="text-xs">≥ {((classificationThreshold[0] - 0.15) * 100).toFixed(0)}%</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="whitespace-nowrap">FRACO</Badge>
-                        <span className="text-xs">≥ {((classificationThreshold[0] - 0.30) * 100).toFixed(0)}%</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="destructive" className="whitespace-nowrap">FALSO POS.</Badge>
-                        <span className="text-xs">&lt; {((classificationThreshold[0] - 0.30) * 100).toFixed(0)}%</span>
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Resumo Dinâmico */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {Object.entries(getDynamicSummary()).map(([label, count]) => (
-                      <button
-                        key={label}
-                        onClick={() => setFilterPrediction(filterPrediction === label ? "all" : label)}
-                        className={`bg-muted rounded-lg p-4 transition-all hover:scale-105 ${
-                          filterPrediction === label ? "ring-2 ring-primary" : ""
-                        }`}
-                      >
-                        <div className="text-2xl font-bold">
-                          {count as number}
-                        </div>
-                        <div className="text-sm text-muted-foreground flex items-center gap-1 justify-center">
-                          <Filter className="h-3 w-3" />
-                          {label}
-                        </div>
-                      </button>
-                    ))}
+                    {Object.entries(getDynamicSummary()).map(
+                      ([label, count]) => (
+                        <button
+                          key={label}
+                          onClick={() =>
+                            setFilterPrediction(
+                              filterPrediction === label ? "all" : label
+                            )
+                          }
+                          className={`bg-muted rounded-lg p-4 transition-all hover:scale-105 ${
+                            filterPrediction === label
+                              ? "ring-2 ring-primary"
+                              : ""
+                          }`}>
+                          <div className="text-2xl font-bold">
+                            {count as number}
+                          </div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-1 justify-center">
+                            <Filter className="h-3 w-3" />
+                            {label}
+                          </div>
+                        </button>
+                      )
+                    )}
                   </div>
 
                   {/* Filtros */}
                   <div className="flex items-center gap-4">
-                    <Select value={filterPrediction} onValueChange={(value) => {
-                      setFilterPrediction(value);
-                      setCurrentPage(1);
-                    }}>
+                    <Select
+                      value={filterPrediction}
+                      onValueChange={(value) => {
+                        setFilterPrediction(value);
+                        setCurrentPage(1);
+                      }}>
                       <SelectTrigger className="w-[220px]">
                         <SelectValue placeholder="Filtrar por classificação" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todos</SelectItem>
-                        <SelectItem value="PLANETA CONFIRMADO">Planeta Confirmado</SelectItem>
-                        <SelectItem value="CANDIDATO FORTE">Candidato Forte</SelectItem>
-                        <SelectItem value="CANDIDATO FRACO">Candidato Fraco</SelectItem>
-                        <SelectItem value="FALSO POSITIVO">Falso Positivo</SelectItem>
+                        <SelectItem value="PLANETA CONFIRMADO">
+                          Planeta Confirmado
+                        </SelectItem>
+                        <SelectItem value="CANDIDATO FORTE">
+                          Candidato Forte
+                        </SelectItem>
+                        <SelectItem value="CANDIDATO FRACO">
+                          Candidato Fraco
+                        </SelectItem>
+                        <SelectItem value="FALSO POSITIVO">
+                          Falso Positivo
+                        </SelectItem>
                       </SelectContent>
                     </Select>
 
@@ -749,8 +1160,7 @@ const Classificacao = () => {
                         onClick={() => {
                           setFilterPrediction("all");
                           setCurrentPage(1);
-                        }}
-                      >
+                        }}>
                         Limpar filtro
                       </Button>
                     )}
@@ -770,28 +1180,41 @@ const Classificacao = () => {
                               <TableHead>Raio (R⊕)</TableHead>
                               <TableHead>Temp. (K)</TableHead>
                               <TableHead>Classificação</TableHead>
-                              <TableHead className="text-right">Conf.</TableHead>
+                              <TableHead className="text-right">
+                                Conf.
+                              </TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {getPaginatedResults().map((row: any) => {
-                              const dynamicPrediction = getDynamicPrediction(row.confidence);
+                              const dynamicPrediction = getDynamicPrediction(
+                                row.confidence
+                              );
                               return (
                                 <TableRow key={row.id}>
                                   <TableCell className="font-medium font-mono text-xs">
                                     {row.id}
                                   </TableCell>
-                                  <TableCell>{row.pl_period.toFixed(2)}</TableCell>
+                                  <TableCell>
+                                    {row.pl_period.toFixed(2)}
+                                  </TableCell>
                                   <TableCell>
                                     {row.pl_transit_duration.toFixed(2)}
                                   </TableCell>
                                   <TableCell>
                                     {row.pl_transit_depth_ppm.toFixed(0)}
                                   </TableCell>
-                                  <TableCell>{row.pl_radius.toFixed(2)}</TableCell>
-                                  <TableCell>{row.pl_eq_temp.toFixed(0)}</TableCell>
                                   <TableCell>
-                                    <Badge variant={getPredictionColor(dynamicPrediction)}>
+                                    {row.pl_radius.toFixed(2)}
+                                  </TableCell>
+                                  <TableCell>
+                                    {row.pl_eq_temp.toFixed(0)}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      variant={getPredictionColor(
+                                        dynamicPrediction
+                                      )}>
                                       {dynamicPrediction}
                                     </Badge>
                                   </TableCell>
@@ -812,9 +1235,13 @@ const Classificacao = () => {
                   {viewMode === "cards" && (
                     <div className="grid md:grid-cols-2 gap-4">
                       {getPaginatedResults().map((row: any) => {
-                        const dynamicPrediction = getDynamicPrediction(row.confidence);
+                        const dynamicPrediction = getDynamicPrediction(
+                          row.confidence
+                        );
                         return (
-                          <Card key={row.id} className="hover:shadow-lg transition-shadow">
+                          <Card
+                            key={row.id}
+                            className="hover:shadow-lg transition-shadow">
                             <CardHeader className="pb-3">
                               <div className="flex items-start justify-between">
                                 <div>
@@ -826,7 +1253,10 @@ const Classificacao = () => {
                                   </CardDescription>
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
-                                  <Badge variant={getPredictionColor(dynamicPrediction)}>
+                                  <Badge
+                                    variant={getPredictionColor(
+                                      dynamicPrediction
+                                    )}>
                                     {dynamicPrediction}
                                   </Badge>
                                   <span className="text-xs font-semibold">
@@ -838,28 +1268,52 @@ const Classificacao = () => {
                             <CardContent className="space-y-2">
                               <div className="grid grid-cols-2 gap-3 text-sm">
                                 <div>
-                                  <span className="text-muted-foreground">Período:</span>
-                                  <div className="font-semibold">{row.pl_period.toFixed(2)} dias</div>
+                                  <span className="text-muted-foreground">
+                                    Período:
+                                  </span>
+                                  <div className="font-semibold">
+                                    {row.pl_period.toFixed(2)} dias
+                                  </div>
                                 </div>
                                 <div>
-                                  <span className="text-muted-foreground">Duração:</span>
-                                  <div className="font-semibold">{row.pl_transit_duration.toFixed(2)} h</div>
+                                  <span className="text-muted-foreground">
+                                    Duração:
+                                  </span>
+                                  <div className="font-semibold">
+                                    {row.pl_transit_duration.toFixed(2)} h
+                                  </div>
                                 </div>
                                 <div>
-                                  <span className="text-muted-foreground">Profundidade:</span>
-                                  <div className="font-semibold">{row.pl_transit_depth_ppm.toFixed(0)} ppm</div>
+                                  <span className="text-muted-foreground">
+                                    Profundidade:
+                                  </span>
+                                  <div className="font-semibold">
+                                    {row.pl_transit_depth_ppm.toFixed(0)} ppm
+                                  </div>
                                 </div>
                                 <div>
-                                  <span className="text-muted-foreground">Raio:</span>
-                                  <div className="font-semibold">{row.pl_radius.toFixed(2)} R⊕</div>
+                                  <span className="text-muted-foreground">
+                                    Raio:
+                                  </span>
+                                  <div className="font-semibold">
+                                    {row.pl_radius.toFixed(2)} R⊕
+                                  </div>
                                 </div>
                                 <div>
-                                  <span className="text-muted-foreground">Temp. Eq.:</span>
-                                  <div className="font-semibold">{row.pl_eq_temp.toFixed(0)} K</div>
+                                  <span className="text-muted-foreground">
+                                    Temp. Eq.:
+                                  </span>
+                                  <div className="font-semibold">
+                                    {row.pl_eq_temp.toFixed(0)} K
+                                  </div>
                                 </div>
                                 <div>
-                                  <span className="text-muted-foreground">Fluxo:</span>
-                                  <div className="font-semibold">{row.pl_insolation_flux.toFixed(1)}</div>
+                                  <span className="text-muted-foreground">
+                                    Fluxo:
+                                  </span>
+                                  <div className="font-semibold">
+                                    {row.pl_insolation_flux.toFixed(1)}
+                                  </div>
                                 </div>
                               </div>
                             </CardContent>
@@ -873,9 +1327,10 @@ const Classificacao = () => {
                   {totalPages > 1 && (
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
                       <div className="text-sm text-muted-foreground">
-                        Página {currentPage} de {totalPages} ({getFilteredResults().length} resultados)
+                        Página {currentPage} de {totalPages} (
+                        {getFilteredResults().length} resultados)
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         {/* Primeira Página */}
                         <Button
@@ -883,24 +1338,24 @@ const Classificacao = () => {
                           size="sm"
                           onClick={() => handlePageChange(1)}
                           disabled={currentPage === 1}
-                          title="Primeira página"
-                        >
+                          title="Primeira página">
                           <ChevronsLeft className="h-4 w-4" />
                         </Button>
-                        
+
                         {/* Página Anterior */}
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handlePageChange(currentPage - 1)}
                           disabled={currentPage === 1}
-                          title="Página anterior"
-                        >
+                          title="Página anterior">
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        
+
                         {/* Input de Página */}
-                        <form onSubmit={handlePageInputSubmit} className="flex items-center gap-2">
+                        <form
+                          onSubmit={handlePageInputSubmit}
+                          className="flex items-center gap-2">
                           <Input
                             type="number"
                             min="1"
@@ -911,17 +1366,18 @@ const Classificacao = () => {
                             className="w-16 h-9 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             title="Digite o número da página"
                           />
-                          <span className="text-sm text-muted-foreground">/ {totalPages}</span>
+                          <span className="text-sm text-muted-foreground">
+                            / {totalPages}
+                          </span>
                         </form>
-                        
+
                         {/* Página Seguinte */}
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handlePageChange(currentPage + 1)}
                           disabled={currentPage === totalPages}
-                          title="Próxima página"
-                        >
+                          title="Próxima página">
                           <ChevronRight className="h-4 w-4" />
                         </Button>
 
@@ -931,15 +1387,92 @@ const Classificacao = () => {
                           size="sm"
                           onClick={() => handlePageChange(totalPages)}
                           disabled={currentPage === totalPages}
-                          title="Última página"
-                        >
+                          title="Última página">
                           <ChevronsRight className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   )}
 
-                  <Button className="w-full" variant="outline">
+                  {/* Controle de Threshold Discreto */}
+                  <details className="group">
+                    <summary className="flex items-center justify-between cursor-pointer list-none p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <Settings className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">
+                          Configurações Avançadas
+                        </span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
+                    </summary>
+                    <div className="mt-3 p-4 border rounded-lg bg-muted/30 space-y-3">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="text-sm">Limite de Confiança</Label>
+                          <span className="text-sm font-semibold text-primary">
+                            {(classificationThreshold[0] * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                        <Slider
+                          value={classificationThreshold}
+                          onValueChange={(value) => {
+                            setClassificationThreshold(value);
+                            setCurrentPage(1);
+                          }}
+                          min={0.3}
+                          max={0.95}
+                          step={0.05}
+                          className="w-full"
+                        />
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Ajusta o nível de confiança para classificação dos
+                          resultados
+                        </p>
+                      </div>
+
+                      {/* Legenda compacta */}
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        <div className="flex items-center gap-1">
+                          <Badge variant="default" className="h-5 text-xs">
+                            CONFIRM
+                          </Badge>
+                          <span className="text-muted-foreground">
+                            ≥{(classificationThreshold[0] * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Badge variant="secondary" className="h-5 text-xs">
+                            FORTE
+                          </Badge>
+                          <span className="text-muted-foreground">
+                            ≥
+                            {(
+                              (classificationThreshold[0] - 0.15) *
+                              100
+                            ).toFixed(0)}
+                            %
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Badge variant="outline" className="h-5 text-xs">
+                            FRACO
+                          </Badge>
+                          <span className="text-muted-foreground">
+                            ≥
+                            {((classificationThreshold[0] - 0.3) * 100).toFixed(
+                              0
+                            )}
+                            %
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </details>
+
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={handleExportCSV}>
                     <Download className="h-4 w-4 mr-2" />
                     Exportar Resultados (CSV)
                   </Button>
