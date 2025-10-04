@@ -20,4 +20,4 @@
     EXPOSE 8080
 
     # Command to run your application when the container starts
-    CMD ["bun", "run", "dev"] # Assuming a "start" script in package.json
+    CMD ["bun", "run", "dev"]
