@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Upload,
@@ -43,7 +43,36 @@ const Classificacao = () => {
   const [threshold, setThreshold] = useState([0.5]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState<any>(null);
+  const [modelInfo, setModelInfo] = useState<any>(null);
+  const [loadingModelInfo, setLoadingModelInfo] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    fetchModelInfo();
+  }, []);
+
+  const fetchModelInfo = async () => {
+    try {
+      setLoadingModelInfo(true);
+      const response = await fetch("http://localhost:8000/api/v1/model/info", {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        console.warn("Não foi possível carregar informações do modelo");
+        setModelInfo(null);
+        return;
+      }
+
+      const data = await response.json();
+      setModelInfo(data);
+    } catch (error) {
+      console.warn("Erro ao buscar informações do modelo:", error);
+      setModelInfo(null);
+    } finally {
+      setLoadingModelInfo(false);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -234,8 +263,6 @@ const Classificacao = () => {
             st_eff_temp: csvRow.st_eff_temp || 0,
             st_radius: csvRow.st_radius || 0,
             st_logg: csvRow.st_logg || 0,
-            ra: csvRow.ra || 0,
-            dec: csvRow.dec || 0,
           };
         })
         .filter((row) => row !== null); // Remove linhas nulas
@@ -277,7 +304,7 @@ const Classificacao = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container pt-24 pb-16">
+      <main className="container pt-24 pb-16 max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -287,17 +314,79 @@ const Classificacao = () => {
           </h1>
           <p className="text-xl text-muted-foreground">
             Faça upload do seu CSV e classifique candidatos usando nosso modelo
-            ExoSight
+            Specttra
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="space-y-6">
+          {/* Sobre o Modelo */}
+          {!loadingModelInfo && modelInfo && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}>
+              <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+                <CardHeader>
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <CheckCircle2 className="h-6 w-6 text-primary" />
+                    </div>
+                    {modelInfo.name || "Sobre o Modelo Specttra"}
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    {modelInfo.description ||
+                      "Modelo de Machine Learning treinado com dados de missões espaciais"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <div className="text-center p-4 bg-background/50 rounded-lg">
+                      <div className="text-3xl font-bold text-primary mb-1">
+                        {modelInfo.metrics?.roc_auc?.toFixed(2) || "N/A"}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        ROC-AUC Score
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Excelente capacidade de discriminação
+                      </p>
+                    </div>
+                    <div className="text-center p-4 bg-background/50 rounded-lg">
+                      <div className="text-3xl font-bold text-primary mb-1">
+                        {modelInfo.metrics?.accuracy
+                          ? `${(modelInfo.metrics.accuracy * 100).toFixed(0)}%`
+                          : "N/A"}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Acurácia
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Alta precisão nas predições
+                      </p>
+                    </div>
+                    <div className="text-center p-4 bg-background/50 rounded-lg">
+                      <div className="text-3xl font-bold text-primary mb-1">
+                        {modelInfo.metrics?.f1_score?.toFixed(2) || "N/A"}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        F1-Score
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Balanceamento ideal
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
           {/* Upload Section */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="lg:col-span-2 space-y-6">
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -358,8 +447,6 @@ const Classificacao = () => {
                       "st_eff_temp",
                       "st_radius",
                       "st_logg",
-                      "ra",
-                      "dec",
                     ].map((col) => (
                       <Badge key={col} variant="secondary">
                         {col}
@@ -476,69 +563,6 @@ const Classificacao = () => {
                 </CardContent>
               </Card>
             )}
-          </motion.div>
-
-          {/* Info Sidebar */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Sobre o Modelo</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm space-y-2">
-                <p className="text-muted-foreground">
-                  O modelo ExoSight foi treinado com dados de missões Kepler, K2
-                  e TESS, usando método de detecção por trânsito.
-                </p>
-                <div className="space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">ROC-AUC:</span>
-                    <span className="font-semibold">0.96</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Accuracy:</span>
-                    <span className="font-semibold">92%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">F1-Score:</span>
-                    <span className="font-semibold">0.89</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Classes de Saída</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div>
-                  <Badge className="mb-1">CONFIRMED</Badge>
-                  <p className="text-muted-foreground text-xs">
-                    Planeta confirmado
-                  </p>
-                </div>
-                <div>
-                  <Badge variant="secondary" className="mb-1">
-                    PC
-                  </Badge>
-                  <p className="text-muted-foreground text-xs">
-                    Planet Candidate
-                  </p>
-                </div>
-                <div>
-                  <Badge variant="outline" className="mb-1">
-                    FP
-                  </Badge>
-                  <p className="text-muted-foreground text-xs">
-                    False Positive
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
           </motion.div>
         </div>
       </main>
