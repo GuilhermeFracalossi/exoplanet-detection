@@ -19,6 +19,7 @@ export const Navbar = () => {
     { href: "/", label: "Início" },
     { href: "/classificacao", label: "Classificação" },
     { href: "/fine-tuning", label: "Fine Tuning" },
+    { href: "/planos", label: "Planos" },
   ];
 
   return (
