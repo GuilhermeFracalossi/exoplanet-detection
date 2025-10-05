@@ -60,10 +60,6 @@ def train_model(user_dataset_path: str, main_dataset_path: str, user_params: dic
 
     print(f"Train: {train_df.shape[0]} samples | Test: {test_df.shape[0]} samples")
 
-    # --- Save test set for future predictions ---
-    # test_df[['transit_id'] + feature_cols].to_csv(BASE_DATA_DIR, index=False)
-    # print(f"✅ Test data saved at: {BASE_DATA_DIR}")
-
     # --- Prepare data ---
     X_train = train_df[feature_cols]
     y_train = train_df[target_col]
@@ -109,7 +105,7 @@ def train_model(user_dataset_path: str, main_dataset_path: str, user_params: dic
         "f1_score_planet": float(f1_score(y_test, y_pred))
     }
 
-    # --- Save model and metadata ---
+    # --- Save model, scaler and metadata ---
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     model_folder = os.path.join(BASE_MODEL_DIR, f"model_{timestamp}")
     os.makedirs(model_folder, exist_ok=True)
@@ -118,25 +114,31 @@ def train_model(user_dataset_path: str, main_dataset_path: str, user_params: dic
     joblib.dump(model, model_path)
     print(f"✅ Model saved at: {model_path}")
 
+    scaler_path = os.path.join(model_folder, "scaler.pkl")
+    joblib.dump(scaler, scaler_path)
+    print(f"✅ Scaler saved at: {scaler_path}")
+
     # --- Save metadata ---
     metadata_folder = os.path.join(model_folder, "metadata")
-    os.makedirs(metadata_folder, exist_ok=True)  # <--- garante que metadata existe
+    os.makedirs(metadata_folder, exist_ok=True)  
 
     metadata = {
         "model_name": f"lightgbm_model_{timestamp}",
         "model_path": model_path,
+        "scaler_path": scaler_path, 
         "created_at": timestamp,
         "params": user_params,
         "metrics": metrics
     }
-
+    
     meta_path = os.path.join(metadata_folder, "metadata.json")
     pd.Series(metadata).to_json(meta_path)
     print(f"📄 Metadata saved at: {meta_path}")
 
     return {
-        "message": "Model successfully trained and saved!",
+        "message": "Model and scaler successfully trained and saved!",
         "metrics": metrics,
         "model_path": model_path,
+        "scaler_path": scaler_path, 
         "metadata_path": meta_path
     }
