@@ -7,6 +7,8 @@ import { Navbar } from "@/components/Navbar";
 import Index from "./pages/Index";
 import Classificacao from "./pages/Classificacao";
 import FineTuning from "./pages/FineTuning";
+import CreateModel from "./pages/fine-tuning/CreateModel";
+import CustomModelClassify from "./pages/fine-tuning/CustomModelClassify";
 import { Planos } from "./pages/Planos";
 import NotFound from "./pages/NotFound";
 
@@ -17,17 +19,21 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/classificacao" element={<Classificacao />} />
-          <Route path="/fine-tuning" element={<FineTuning />} />
-          <Route path="/planos" element={<Planos />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      
+
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/classificacao" element={<Classificacao />} />
+        <Route path="/fine-tuning" element={<FineTuning />} />
+        <Route path="/fine-tuning/create" element={<CreateModel />} />
+        <Route
+          path="/fine-tuning/classify/:modelId"
+          element={<CustomModelClassify />}
+        />
+        <Route path="/planos" element={<Planos />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </TooltipProvider>
   </QueryClientProvider>
 );
