@@ -198,13 +198,9 @@ const CustomModelClassify = () => {
           "transit_id",
           "pl_period",
           "pl_transit_duration",
-          "pl_transit_depth",
           "pl_radius",
-          "pl_eq_temp",
-          "pl_insolation_flux",
           "st_eff_temp",
           "st_radius",
-          "st_logg",
         ];
 
         const missingColumns = requiredColumns.filter(
@@ -319,14 +315,9 @@ const CustomModelClassify = () => {
             confidence: apiItem.confidence,
             pl_period: csvRow.pl_period || 0,
             pl_transit_duration: csvRow.pl_transit_duration || 0,
-            pl_transit_depth: csvRow.pl_transit_depth || 0,
-            pl_transit_depth_ppm: (csvRow.pl_transit_depth || 0) * 10000,
             pl_radius: csvRow.pl_radius || 0,
-            pl_eq_temp: csvRow.pl_eq_temp || 0,
-            pl_insolation_flux: csvRow.pl_insolation_flux || 0,
             st_eff_temp: csvRow.st_eff_temp || 0,
             st_radius: csvRow.st_radius || 0,
-            st_logg: csvRow.st_logg || 0,
           };
         })
         .filter((row) => row !== null);
@@ -463,13 +454,9 @@ const CustomModelClassify = () => {
         "Confidence (%)",
         "Orbital Period (days)",
         "Transit Duration (h)",
-        "Depth (ppm)",
         "Radius (R⊕)",
-        "Eq. Temp. (K)",
-        "Insolation Flux",
         "Stellar Temp. (K)",
         "Stellar Radius (R☉)",
-        "Stellar Log g",
       ];
 
       const csvRows = results.rows.map((row: any) => {
@@ -480,13 +467,9 @@ const CustomModelClassify = () => {
           (row.confidence * 100).toFixed(1),
           row.pl_period.toFixed(2),
           row.pl_transit_duration.toFixed(2),
-          row.pl_transit_depth_ppm.toFixed(0),
           row.pl_radius.toFixed(2),
-          row.pl_eq_temp.toFixed(0),
-          row.pl_insolation_flux.toFixed(2),
           row.st_eff_temp.toFixed(0),
           row.st_radius.toFixed(2),
-          row.st_logg.toFixed(2),
         ].join(",");
       });
 
@@ -670,13 +653,9 @@ const CustomModelClassify = () => {
                       "transit_id",
                       "pl_period",
                       "pl_transit_duration",
-                      "pl_transit_depth",
                       "pl_radius",
-                      "pl_eq_temp",
-                      "pl_insolation_flux",
                       "st_eff_temp",
                       "st_radius",
-                      "st_logg",
                     ].map((col) => (
                       <Badge key={col} variant="secondary">
                         {col}
@@ -859,9 +838,9 @@ const CustomModelClassify = () => {
                               <TableHead className="w-[120px]">ID</TableHead>
                               <TableHead>Period (d)</TableHead>
                               <TableHead>Duration (h)</TableHead>
-                              <TableHead>Depth (ppm)</TableHead>
                               <TableHead>Radius (R⊕)</TableHead>
-                              <TableHead>Temp. (K)</TableHead>
+                              <TableHead>St. Temp. (K)</TableHead>
+                              <TableHead>St. Radius (R☉)</TableHead>
                               <TableHead>Classification</TableHead>
                               <TableHead className="text-right">
                                 Conf.
@@ -885,13 +864,13 @@ const CustomModelClassify = () => {
                                     {row.pl_transit_duration.toFixed(2)}
                                   </TableCell>
                                   <TableCell>
-                                    {row.pl_transit_depth_ppm.toFixed(0)}
-                                  </TableCell>
-                                  <TableCell>
                                     {row.pl_radius.toFixed(2)}
                                   </TableCell>
                                   <TableCell>
-                                    {row.pl_eq_temp.toFixed(0)}
+                                    {row.st_eff_temp.toFixed(0)}
+                                  </TableCell>
+                                  <TableCell>
+                                    {row.st_radius.toFixed(2)}
                                   </TableCell>
                                   <TableCell>
                                     <Badge
@@ -968,14 +947,6 @@ const CustomModelClassify = () => {
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Depth:
-                                  </span>
-                                  <div className="font-semibold">
-                                    {row.pl_transit_depth_ppm.toFixed(0)} ppm
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">
                                     Radius:
                                   </span>
                                   <div className="font-semibold">
@@ -984,18 +955,18 @@ const CustomModelClassify = () => {
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Eq. Temp.:
+                                    St. Temp.:
                                   </span>
                                   <div className="font-semibold">
-                                    {row.pl_eq_temp.toFixed(0)} K
+                                    {row.st_eff_temp.toFixed(0)} K
                                   </div>
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Flux:
+                                    St. Radius:
                                   </span>
                                   <div className="font-semibold">
-                                    {row.pl_insolation_flux.toFixed(1)}
+                                    {row.st_radius.toFixed(2)} R☉
                                   </div>
                                 </div>
                               </div>

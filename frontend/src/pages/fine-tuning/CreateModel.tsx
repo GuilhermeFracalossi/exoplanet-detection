@@ -62,13 +62,119 @@ const CreateModel = () => {
 
   const [trainedModel, setTrainedModel] = useState<any>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const validateTrainingCSV = async (file: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        try {
+          const text = e.target?.result as string;
+
+          if (!text || text.trim().length === 0) {
+            toast({
+              title: "Invalid CSV",
+              description: "The CSV file is empty.",
+              variant: "destructive",
+            });
+            resolve(false);
+            return;
+          }
+
+          const lines = text
+            .split("\n")
+            .filter((line) => line.trim().length > 0);
+
+          if (lines.length === 0) {
+            toast({
+              title: "Invalid CSV",
+              description: "No data found in CSV file.",
+              variant: "destructive",
+            });
+            resolve(false);
+            return;
+          }
+
+          const firstLine = lines[0];
+          const columns = firstLine
+            .split(",")
+            .map((col) => col.trim().replace(/['"]/g, "").toLowerCase());
+
+          console.log("CSV Columns found:", columns);
+
+          const requiredColumns = [
+            "pl_period",
+            "pl_transit_duration",
+            "pl_radius",
+            "st_eff_temp",
+            "st_radius",
+            "isplanet", // Target column obrigatória (lowercase para comparação)
+          ];
+
+          const missingColumns = requiredColumns.filter(
+            (col) => !columns.includes(col.toLowerCase())
+          );
+
+          console.log("Missing columns:", missingColumns);
+
+          if (missingColumns.length > 0) {
+            toast({
+              title: "Invalid CSV",
+              description: `Missing required columns: ${missingColumns.join(
+                ", "
+              )}`,
+              variant: "destructive",
+            });
+            resolve(false);
+          } else {
+            toast({
+              title: "CSV Validated ✓",
+              description:
+                "All required columns found, including isPlanet target column.",
+            });
+            resolve(true);
+          }
+        } catch (error) {
+          console.error("Error validating CSV:", error);
+          toast({
+            title: "Validation Error",
+            description: "Could not parse the CSV file.",
+            variant: "destructive",
+          });
+          resolve(false);
+        }
+      };
+
+      reader.onerror = () => {
+        toast({
+          title: "Error reading file",
+          description: "Could not read the CSV file.",
+          variant: "destructive",
+        });
+        resolve(false);
+      };
+
+      reader.readAsText(file);
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      toast({
-        title: "File uploaded",
-        description: `${e.target.files[0].name} ready for training.`,
-      });
+      const selectedFile = e.target.files[0];
+
+      // Validar CSV antes de aceitar
+      const isValid = await validateTrainingCSV(selectedFile);
+
+      if (isValid) {
+        setFile(selectedFile);
+        toast({
+          title: "File uploaded",
+          description: `${selectedFile.name} ready for training.`,
+        });
+      } else {
+        // Limpar o input se o arquivo for inválido
+        e.target.value = "";
+        setFile(null);
+      }
     }
   };
 
@@ -230,7 +336,7 @@ const CreateModel = () => {
                   Training Data
                 </CardTitle>
                 <CardDescription>
-                  Upload your CSV file with features and target labels
+                  Upload your CSV file with features and isPlanet labels
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -259,25 +365,21 @@ const CreateModel = () => {
                     {[
                       "pl_period",
                       "pl_transit_duration",
-                      "pl_transit_depth",
                       "pl_radius",
-                      "pl_eq_temp",
-                      "pl_insolation_flux",
                       "st_eff_temp",
                       "st_radius",
-                      "st_logg",
                     ].map((col) => (
                       <Badge key={col} variant="secondary">
                         {col}
                       </Badge>
                     ))}
-                    <Badge variant="default">target</Badge>
+                    <Badge variant="default">isPlanet</Badge>
                   </div>
                   <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded p-3 mt-3">
                     <p className="text-xs text-blue-900 dark:text-blue-100 flex items-start gap-2">
                       <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
                       <span>
-                        The <strong>target</strong> column should contain 0
+                        The <strong>isPlanet</strong> column should contain 0
                         (false positive) or 1 (confirmed planet). Your data will
                         be concatenated with our base Specttra dataset for
                         training.
