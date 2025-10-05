@@ -17,17 +17,20 @@ export const Navbar = () => {
   };
 
   const navLinks = [
-    { href: "/", label: "Início" },
-    { href: "/classificacao", label: "Classificação" },
+    { href: "/", label: "Home" },
+    { href: "/classificacao", label: "Classification" },
     { href: "/fine-tuning", label: "Fine Tuning" },
-    { href: "/planos", label: "Planos" },
+    { href: "/planos", label: "Plans" },
   ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-lg">
       <nav className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 font-bold text-xl" onClick={handleLinkClick}>
+        <Link
+          to="/"
+          className="flex items-center gap-2 font-bold text-xl"
+          onClick={handleLinkClick}>
           <Sparkles className="h-6 w-6 text-primary" />
           <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
             Specttra
@@ -42,14 +45,13 @@ export const Navbar = () => {
               to={link.href}
               className={`text-sm font-medium transition-colors hover:text-primary ${
                 isActive(link.href) ? "text-primary" : "text-muted-foreground"
-              }`}
-            >
+              }`}>
               {link.label}
             </Link>
           ))}
           <ThemeToggle />
           <Button variant="default" size="sm" asChild>
-            <Link to="/classificacao">Começar</Link>
+            <Link to="/classificacao">Get Started</Link>
           </Button>
         </div>
 
@@ -59,9 +61,12 @@ export const Navbar = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </Button>
         </div>
       </nav>
@@ -77,13 +82,14 @@ export const Navbar = () => {
                 onClick={handleLinkClick} // Fecha o menu ao clicar
                 className={`w-full text-lg font-medium transition-colors hover:text-primary ${
                   isActive(link.href) ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
+                }`}>
                 {link.label}
               </Link>
             ))}
             <Button variant="default" size="sm" asChild className="w-full mt-2">
-              <Link to="/classificacao" onClick={handleLinkClick}>Começar</Link>
+              <Link to="/classificacao" onClick={handleLinkClick}>
+                Get Started
+              </Link>
             </Button>
           </div>
         </div>

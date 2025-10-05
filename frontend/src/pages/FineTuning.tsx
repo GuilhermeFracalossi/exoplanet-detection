@@ -92,8 +92,8 @@ const FineTuning = () => {
   const validateCSV = async () => {
     if (!file) {
       toast({
-        title: "Erro",
-        description: "Por favor, selecione um arquivo primeiro.",
+        title: "Error",
+        description: "Please select a file first.",
         variant: "destructive",
       });
       return;
@@ -106,8 +106,8 @@ const FineTuning = () => {
       setIsValidating(false);
       setValidationStatus("valid");
       toast({
-        title: "CSV Validado!",
-        description: "Arquivo válido e pronto para treinamento.",
+        title: "CSV Validated!",
+        description: "File is valid and ready for training.",
       });
     }, 2000);
   };
@@ -115,8 +115,8 @@ const FineTuning = () => {
   const handleTrain = async () => {
     if (!file || validationStatus !== "valid") {
       toast({
-        title: "Erro",
-        description: "Por favor, valide o CSV primeiro.",
+        title: "Error",
+        description: "Please validate the CSV first.",
         variant: "destructive",
       });
       return;
@@ -166,8 +166,8 @@ const FineTuning = () => {
       setIsTraining(false);
 
       toast({
-        title: "Treinamento Concluído!",
-        description: "Modelo treinado com sucesso. Confira as métricas.",
+        title: "Training Completed!",
+        description: "Model trained successfully. Check the metrics.",
       });
     }, 5500);
   };
@@ -189,7 +189,7 @@ const FineTuning = () => {
                   Fine Tuning Premium
                 </CardTitle>
                 <CardDescription className="text-lg">
-                  Aprimore o modelo Specttra com seus próprios dados rotulados
+                  Enhance the Specttra model with your own labeled data
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
@@ -197,48 +197,46 @@ const FineTuning = () => {
                   <div className="space-y-4">
                     <h3 className="font-semibold flex items-center gap-2">
                       <Sparkles className="h-5 w-5 text-primary" />
-                      Recursos Premium
+                      Premium Features
                     </h3>
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       <li className="flex items-start gap-2">
                         <span className="text-primary">✓</span>
-                        <span>Upload de dados com rótulos (target)</span>
+                        <span>Upload data with labels (target)</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-primary">✓</span>
                         <span>
-                          Concatenação automática com dataset base Specttra
+                          Automatic concatenation with Specttra base dataset
                         </span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-primary">✓</span>
-                        <span>Ajuste de hiperparâmetros</span>
+                        <span>Hyperparameter tuning</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-primary">✓</span>
-                        <span>Métricas detalhadas e curvas ROC/PR</span>
+                        <span>Detailed metrics and ROC/PR curves</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-primary">✓</span>
-                        <span>Importância de features (explicabilidade)</span>
+                        <span>Feature importance (explainability)</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-primary">✓</span>
-                        <span>Salvar e exportar modelos personalizados</span>
+                        <span>Save and export custom models</span>
                       </li>
                     </ul>
                   </div>
 
                   <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-6 space-y-4">
                     <h3 className="font-semibold">
-                      {loading
-                        ? "Carregando métricas..."
-                        : "Métricas de Performance"}
+                      {loading ? "Loading metrics..." : "Performance Metrics"}
                     </h3>
                     <div className="space-y-3">
                       {loading ? (
                         <div className="text-sm text-muted-foreground text-center py-4">
-                          Carregando dados do modelo...
+                          Loading model data...
                         </div>
                       ) : modelInfo ? (
                         [
@@ -272,12 +270,12 @@ const FineTuning = () => {
                         ))
                       ) : (
                         <div className="text-sm text-muted-foreground text-center py-4">
-                          Não foi possível carregar as métricas
+                          Unable to load metrics
                         </div>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground italic">
-                      *Métricas atuais do modelo base Specttra
+                      *Current metrics from Specttra base model
                     </p>
                   </div>
                 </div>
@@ -285,17 +283,17 @@ const FineTuning = () => {
                 <div className="border-t pt-6">
                   <div className="text-center space-y-4">
                     <p className="text-muted-foreground">
-                      Desbloqueie o potencial completo do Specttra
+                      Unlock the full potential of Specttra
                     </p>
                     <Button
                       size="lg"
                       className="text-lg px-8"
                       onClick={() => setIsPremium(true)}>
                       <Sparkles className="mr-2 h-5 w-5" />
-                      Ativar Premium
+                      Activate Premium
                     </Button>
                     <p className="text-xs text-muted-foreground">
-                      Teste grátis por 14 dias • Cancele quando quiser
+                      Free trial for 14 days • Cancel anytime
                     </p>
                   </div>
                 </div>
@@ -318,11 +316,11 @@ const FineTuning = () => {
             <h1 className="text-4xl font-bold">Fine Tuning</h1>
             <Badge variant="default" className="text-sm">
               <Sparkles className="h-3 w-3 mr-1" />
-              Premium Ativo
+              Premium Active
             </Badge>
           </div>
           <p className="text-xl text-muted-foreground">
-            Personalize o modelo Specttra com seus dados rotulados
+            Customize the Specttra model with your labeled data
           </p>
         </motion.div>
 
@@ -339,7 +337,7 @@ const FineTuning = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <Upload className="h-5 w-5" />
-                      Upload de Dados com Target
+                      Data Upload with Target
                     </div>
                   </div>
                   {validationStatus === "valid" && (
@@ -347,13 +345,13 @@ const FineTuning = () => {
                   )}
                 </CardTitle>
                 <CardDescription>
-                  Carregue seu CSV com features e coluna de target (0 = Falso
-                  Positivo, 1 = Planeta)
+                  Upload your CSV with features and target column (0 = False
+                  Positive, 1 = Planet)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="file-upload">Arquivo CSV</Label>
+                  <Label htmlFor="file-upload">CSV File</Label>
                   <Input
                     id="file-upload"
                     type="file"
@@ -377,12 +375,12 @@ const FineTuning = () => {
                     {isValidating ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent mr-2" />
-                        Validando CSV...
+                        Validating CSV...
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="h-4 w-4 mr-2" />
-                        Validar CSV
+                        Validate CSV
                       </>
                     )}
                   </Button>
@@ -393,11 +391,11 @@ const FineTuning = () => {
                     <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
                       <CheckCircle2 className="h-5 w-5" />
                       <span className="font-semibold">
-                        CSV Validado com Sucesso!
+                        CSV Successfully Validated!
                       </span>
                     </div>
                     <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                      Arquivo pronto para concatenação e treinamento.
+                      File ready for concatenation and training.
                     </p>
                   </div>
                 )}
@@ -415,10 +413,10 @@ const FineTuning = () => {
                       <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
                         2
                       </div>
-                      Concatenação de Dados
+                      Data Concatenation
                     </CardTitle>
                     <CardDescription>
-                      Seus dados serão concatenados com o dataset base Specttra
+                      Your data will be concatenated with Specttra base dataset
                       (Kepler, K2, TESS)
                     </CardDescription>
                   </CardHeader>
@@ -429,9 +427,7 @@ const FineTuning = () => {
                           <div className="text-2xl font-bold text-primary">
                             250
                           </div>
-                          <div className="text-muted-foreground">
-                            Seus Dados
-                          </div>
+                          <div className="text-muted-foreground">Your Data</div>
                         </div>
                         <div className="text-center">
                           <div className="text-4xl font-bold text-muted-foreground">
@@ -441,7 +437,7 @@ const FineTuning = () => {
                         <div className="text-center">
                           <div className="text-2xl font-bold">5,043</div>
                           <div className="text-muted-foreground">
-                            Base Specttra
+                            Specttra Base
                           </div>
                         </div>
                       </div>
@@ -450,7 +446,7 @@ const FineTuning = () => {
                           5,293
                         </div>
                         <div className="text-muted-foreground">
-                          Total de Amostras
+                          Total Samples
                         </div>
                       </div>
                     </div>
@@ -474,16 +470,15 @@ const FineTuning = () => {
                       <div>
                         <div className="flex items-center gap-2">
                           <Settings className="h-5 w-5" />
-                          Configuração de Hiperparâmetros
+                          Hyperparameter Configuration
                           <Badge variant="outline" className="text-xs">
-                            Opcional
+                            Optional
                           </Badge>
                         </div>
                       </div>
                     </CardTitle>
                     <CardDescription>
-                      Use as configurações padrão ou customize os
-                      hiperparâmetros do modelo
+                      Use default settings or customize model hyperparameters
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -528,14 +523,14 @@ const FineTuning = () => {
                       <DialogTrigger asChild>
                         <Button variant="outline" className="w-full">
                           <Settings className="h-4 w-4 mr-2" />
-                          Customizar Hiperparâmetros
+                          Customize Hyperparameters
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Configurar Hiperparâmetros</DialogTitle>
+                          <DialogTitle>Configure Hyperparameters</DialogTitle>
                           <DialogDescription>
-                            Ajuste os parâmetros do modelo RandomForest/XGBoost
+                            Adjust RandomForest/XGBoost model parameters
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
@@ -553,7 +548,7 @@ const FineTuning = () => {
                               }
                             />
                             <p className="text-xs text-muted-foreground">
-                              Número de árvores no ensemble (padrão: 200)
+                              Number of trees in ensemble (default: 200)
                             </p>
                           </div>
 
@@ -571,7 +566,7 @@ const FineTuning = () => {
                               }
                             />
                             <p className="text-xs text-muted-foreground">
-                              Profundidade máxima das árvores (padrão: 10)
+                              Maximum tree depth (default: 10)
                             </p>
                           </div>
 
@@ -590,7 +585,7 @@ const FineTuning = () => {
                               }
                             />
                             <p className="text-xs text-muted-foreground">
-                              Taxa de aprendizado (padrão: 0.1)
+                              Learning rate (default: 0.1)
                             </p>
                           </div>
 
@@ -610,7 +605,7 @@ const FineTuning = () => {
                               }
                             />
                             <p className="text-xs text-muted-foreground">
-                              Mínimo de amostras para dividir um nó (padrão: 2)
+                              Minimum samples to split a node (default: 2)
                             </p>
                           </div>
 
@@ -619,12 +614,11 @@ const FineTuning = () => {
                             onClick={() => {
                               setShowHyperparams(false);
                               toast({
-                                title: "Hiperparâmetros atualizados",
-                                description:
-                                  "Configurações salvas com sucesso.",
+                                title: "Hyperparameters updated",
+                                description: "Settings saved successfully.",
                               });
                             }}>
-                            Salvar Configurações
+                            Save Settings
                           </Button>
                         </div>
                       </DialogContent>
@@ -646,10 +640,10 @@ const FineTuning = () => {
                       <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
                         4
                       </div>
-                      Executar Treinamento
+                      Execute Training
                     </CardTitle>
                     <CardDescription>
-                      Inicie o treinamento com seus dados concatenados
+                      Start training with your concatenated data
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -659,7 +653,7 @@ const FineTuning = () => {
                         className="w-full"
                         onClick={handleTrain}>
                         <Play className="h-5 w-5 mr-2" />
-                        Iniciar Treinamento
+                        Start Training
                       </Button>
                     )}
 
@@ -668,21 +662,21 @@ const FineTuning = () => {
                         <div className="flex items-center gap-2">
                           <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
                           <span className="text-sm font-medium">
-                            Treinando modelo...
+                            Training model...
                           </span>
                         </div>
                         <Progress value={trainingProgress} />
                         <p className="text-xs text-muted-foreground">
                           {trainingProgress < 30 &&
-                            "Preparando dados e features..."}
+                            "Preparing data and features..."}
                           {trainingProgress >= 30 &&
                             trainingProgress < 60 &&
-                            "Treinando modelo com dados concatenados..."}
+                            "Training model with concatenated data..."}
                           {trainingProgress >= 60 &&
                             trainingProgress < 90 &&
-                            "Validando com cross-validation..."}
+                            "Validating with cross-validation..."}
                           {trainingProgress >= 90 &&
-                            "Calculando métricas finais..."}
+                            "Calculating final metrics..."}
                         </p>
                       </div>
                     )}
@@ -691,7 +685,7 @@ const FineTuning = () => {
               </motion.div>
             )}
 
-            {/* Resultados do Treinamento */}
+            {/* Training Results */}
             {trainingResults && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -700,10 +694,10 @@ const FineTuning = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <CheckCircle2 className="h-6 w-6 text-green-500" />
-                      Métricas de Machine Learning
+                      Machine Learning Metrics
                     </CardTitle>
                     <CardDescription>
-                      Resultados do treinamento com validação cruzada
+                      Training results with cross-validation
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -757,7 +751,7 @@ const FineTuning = () => {
                     <div className="border-t pt-4">
                       <Button className="w-full" variant="outline">
                         <Download className="h-4 w-4 mr-2" />
-                        Exportar Modelo Treinado
+                        Export Trained Model
                       </Button>
                     </div>
                   </CardContent>
@@ -775,11 +769,11 @@ const FineTuning = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <BarChart3 className="h-5 w-5" />
-                      Importância de Features
+                      Feature Importance
                     </CardTitle>
                     <CardDescription>
-                      Features mais relevantes para a classificação
-                      (explicabilidade do modelo)
+                      Most relevant features for classification (model
+                      explainability)
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -787,9 +781,9 @@ const FineTuning = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Feature</TableHead>
-                          <TableHead>Importância</TableHead>
+                          <TableHead>Importance</TableHead>
                           <TableHead className="w-[200px]">
-                            Visualização
+                            Visualization
                           </TableHead>
                         </TableRow>
                       </TableHeader>
@@ -827,22 +821,22 @@ const FineTuning = () => {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Info className="h-5 w-5" />
-                  Sobre o Fine Tuning
+                  About Fine Tuning
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-muted-foreground">
                 <p>
-                  O Fine Tuning permite personalizar o modelo Specttra com seus
-                  próprios dados rotulados.
+                  Fine Tuning allows you to customize the Specttra model with
+                  your own labeled data.
                 </p>
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-foreground">Fluxo:</h4>
+                  <h4 className="font-semibold text-foreground">Workflow:</h4>
                   <ul className="space-y-1 list-disc list-inside">
-                    <li>Upload de CSV com target</li>
-                    <li>Validação automática</li>
-                    <li>Concatenação com base</li>
-                    <li>Treinamento do modelo</li>
-                    <li>Métricas detalhadas</li>
+                    <li>Upload CSV with target</li>
+                    <li>Automatic validation</li>
+                    <li>Concatenation with base</li>
+                    <li>Model training</li>
+                    <li>Detailed metrics</li>
                   </ul>
                 </div>
               </CardContent>
@@ -850,11 +844,11 @@ const FineTuning = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Colunas Esperadas</CardTitle>
+                <CardTitle className="text-lg">Expected Columns</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <p className="text-sm text-muted-foreground mb-3">
-                  Seu CSV deve conter:
+                  Your CSV must contain:
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {[
@@ -880,7 +874,7 @@ const FineTuning = () => {
                 </div>
                 <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mt-3">
                   <p className="text-xs">
-                    <strong>target:</strong> 0 = Negativo, 1 = Positivo
+                    <strong>target:</strong> 0 = Negative, 1 = Positive
                   </p>
                 </div>
               </CardContent>
@@ -889,7 +883,7 @@ const FineTuning = () => {
             {modelInfo && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Modelo Base Atual</CardTitle>
+                  <CardTitle className="text-lg">Current Base Model</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="text-sm space-y-2">

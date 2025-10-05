@@ -108,7 +108,7 @@ const Classificacao = () => {
         setModelInfo({
           name: modelo.Modelo || "ExoSight Model",
           description:
-            "Modelo de Machine Learning treinado com dados de missões espaciais Kepler, K2 e TESS",
+            "Machine Learning model trained with data from Kepler, K2 and TESS space missions",
           metrics: {
             roc_auc: modelo.AUC_ROC_Media || 0,
             accuracy: modelo.Acuracia_Media || 0,
@@ -132,20 +132,20 @@ const Classificacao = () => {
       setFile(selectedFile);
 
       try {
-        // Parse CSV e armazenar dados
+        // Parse CSV and store data
         const data = await parseCSV(selectedFile);
         setCsvData(data);
         setShowDataPreview(true);
         setPreviewPage(1);
 
         toast({
-          title: "Arquivo carregado",
-          description: `${data.length} registros encontrados. Revise os dados antes de classificar.`,
+          title: "File loaded",
+          description: `${data.length} records found. Review the data before classifying.`,
         });
       } catch (error) {
         toast({
-          title: "Erro ao ler arquivo",
-          description: "Não foi possível processar o arquivo CSV.",
+          title: "Error reading file",
+          description: "Could not process the CSV file.",
           variant: "destructive",
         });
       }
@@ -215,15 +215,15 @@ const Classificacao = () => {
 
         if (missingColumns.length > 0) {
           toast({
-            title: "Erro de Validação",
-            description: `Colunas faltando: ${missingColumns.join(", ")}`,
+            title: "Validation Error",
+            description: `Missing columns: ${missingColumns.join(", ")}`,
             variant: "destructive",
           });
           resolve(false);
         } else {
           toast({
-            title: "Validação OK",
-            description: "Todas as colunas necessárias foram encontradas!",
+            title: "Validation OK",
+            description: "All required columns were found!",
           });
           resolve(true);
         }
@@ -231,8 +231,8 @@ const Classificacao = () => {
 
       reader.onerror = () => {
         toast({
-          title: "Erro ao ler arquivo",
-          description: "Não foi possível ler o arquivo CSV.",
+          title: "Error reading file",
+          description: "Could not read the CSV file.",
           variant: "destructive",
         });
         reject(false);
@@ -267,8 +267,8 @@ const Classificacao = () => {
   const handleClassify = async () => {
     if (!file) {
       toast({
-        title: "Erro",
-        description: "Por favor, carregue um arquivo CSV primeiro.",
+        title: "Error",
+        description: "Please upload a CSV file first.",
         variant: "destructive",
       });
       return;
@@ -277,7 +277,7 @@ const Classificacao = () => {
     setIsProcessing(true);
 
     try {
-      // Validar colunas do CSV
+      // Validate CSV columns
       const isValid = await validateCSVColumns(file);
 
       if (!isValid) {
@@ -352,17 +352,17 @@ const Classificacao = () => {
       });
 
       toast({
-        title: "Classificação completa!",
-        description: `${mappedRows.length} objetos classificados com sucesso.`,
+        title: "Classification complete!",
+        description: `${mappedRows.length} objects classified successfully.`,
       });
     } catch (error) {
-      console.error("Erro ao classificar:", error);
+      console.error("Classification error:", error);
       toast({
-        title: "Erro na classificação",
+        title: "Classification error",
         description:
           error instanceof Error
             ? error.message
-            : "Ocorreu um erro ao processar o arquivo.",
+            : "An error occurred while processing the file.",
         variant: "destructive",
       });
     } finally {
@@ -446,8 +446,8 @@ const Classificacao = () => {
     } else {
       setPageInput(currentPage.toString());
       toast({
-        title: "Página inválida",
-        description: `Por favor, insira um número entre 1 e ${totalPages}`,
+        title: "Invalid page",
+        description: `Please enter a number between 1 and ${totalPages}`,
         variant: "destructive",
       });
     }
@@ -456,28 +456,28 @@ const Classificacao = () => {
   const handleExportCSV = () => {
     if (!results || !results.rows || results.rows.length === 0) {
       toast({
-        title: "Sem dados para exportar",
-        description: "Não há resultados para exportar.",
+        title: "No data to export",
+        description: "There are no results to export.",
         variant: "destructive",
       });
       return;
     }
 
     try {
-      // Cabeçalhos do CSV
+      // CSV headers
       const headers = [
         "ID",
-        "Classificação",
-        "Confiança (%)",
-        "Período Orbital (dias)",
-        "Duração Trânsito (h)",
-        "Profundidade (ppm)",
-        "Raio (R⊕)",
-        "Temp. Eq. (K)",
-        "Fluxo Insolação",
-        "Temp. Estelar (K)",
-        "Raio Estelar (R☉)",
-        "Log g Estelar",
+        "Classification",
+        "Confidence (%)",
+        "Orbital Period (days)",
+        "Transit Duration (h)",
+        "Depth (ppm)",
+        "Radius (R⊕)",
+        "Eq. Temp. (K)",
+        "Insolation Flux",
+        "Stellar Temp. (K)",
+        "Stellar Radius (R☉)",
+        "Stellar Log g",
       ];
 
       // Criar linhas do CSV com classificação dinâmica
@@ -521,14 +521,14 @@ const Classificacao = () => {
       document.body.removeChild(link);
 
       toast({
-        title: "Exportação concluída!",
-        description: `${results.rows.length} resultados exportados para ${filename}`,
+        title: "Export complete!",
+        description: `${results.rows.length} results exported to ${filename}`,
       });
     } catch (error) {
-      console.error("Erro ao exportar CSV:", error);
+      console.error("CSV export error:", error);
       toast({
-        title: "Erro na exportação",
-        description: "Não foi possível exportar os resultados.",
+        title: "Export error",
+        description: "Could not export the results.",
         variant: "destructive",
       });
     }
@@ -536,7 +536,7 @@ const Classificacao = () => {
 
   const handleDownloadExampleCSV = () => {
     try {
-      // Dados de exemplo realistas
+      // Realistic example data
       const exampleData = [
         {
           transit_id: "KOI-001.01",
@@ -612,14 +612,14 @@ const Classificacao = () => {
       document.body.removeChild(link);
 
       toast({
-        title: "CSV de exemplo baixado!",
-        description: "Use este arquivo como template para suas análises.",
+        title: "Example CSV downloaded!",
+        description: "Use this file as a template for your analyses.",
       });
     } catch (error) {
-      console.error("Erro ao gerar CSV de exemplo:", error);
+      console.error("Error generating example CSV:", error);
       toast({
-        title: "Erro",
-        description: "Não foi possível gerar o CSV de exemplo.",
+        title: "Error",
+        description: "Could not generate the example CSV.",
         variant: "destructive",
       });
     }
@@ -669,11 +669,11 @@ const Classificacao = () => {
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <CheckCircle2 className="h-6 w-6 text-primary" />
                     </div>
-                    {modelInfo.name || "Sobre o Modelo Specttra"}
+                    {modelInfo.name || "About Specttra Model"}
                   </CardTitle>
                   <CardDescription className="text-base">
                     {modelInfo.description ||
-                      "Modelo de Machine Learning treinado com dados de missões espaciais"}
+                      "Machine Learning model trained with space mission data"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -686,7 +686,7 @@ const Classificacao = () => {
                         ROC-AUC Score
                       </div>
                       <p className="text-xs text-muted-foreground mt-2">
-                        Excelente capacidade de discriminação
+                        Excellent discrimination capability
                       </p>
                     </div>
                     <div className="text-center p-4 bg-background/50 rounded-lg">
@@ -696,10 +696,10 @@ const Classificacao = () => {
                           : "N/A"}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        Acurácia
+                        Accuracy
                       </div>
                       <p className="text-xs text-muted-foreground mt-2">
-                        Alta precisão nas predições
+                        High prediction precision
                       </p>
                     </div>
                     <div className="text-center p-4 bg-background/50 rounded-lg">
@@ -710,7 +710,7 @@ const Classificacao = () => {
                         F1-Score
                       </div>
                       <p className="text-xs text-muted-foreground mt-2">
-                        Balanceamento ideal
+                        Ideal balance
                       </p>
                     </div>
                   </div>
@@ -729,15 +729,15 @@ const Classificacao = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5" />
-                  Upload de Dados
+                  Data Upload
                 </CardTitle>
                 <CardDescription>
-                  Carregue seu arquivo CSV ou Parquet com features de trânsito
+                  Upload your CSV or Parquet file with transit features
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="file">Arquivo CSV/Parquet</Label>
+                  <Label htmlFor="file">CSV/Parquet File</Label>
                   <Input
                     id="file"
                     type="file"
@@ -757,25 +757,25 @@ const Classificacao = () => {
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold text-sm flex items-center gap-2">
                       <AlertCircle className="h-4 w-4" />
-                      Colunas Obrigatórias do CSV
+                      Required CSV Columns
                     </h4>
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="ghost" size="sm" className="h-8 gap-2">
                           <HelpCircle className="h-4 w-4" />
-                          Ver Detalhes
+                          View Details
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle className="text-2xl flex items-center gap-2">
                             <Info className="h-6 w-6 text-primary" />
-                            Estrutura do CSV para Classificação
+                            CSV Structure for Classification
                           </DialogTitle>
                           <DialogDescription className="text-base">
-                            Seu arquivo CSV deve conter as seguintes colunas com
-                            dados de trânsito planetário. Baixe o arquivo de
-                            exemplo para começar rapidamente.
+                            Your CSV file must contain the following columns
+                            with planetary transit data. Download the example
+                            file to get started quickly.
                           </DialogDescription>
                         </DialogHeader>
 
@@ -786,20 +786,20 @@ const Classificacao = () => {
                               <div className="flex items-start justify-between">
                                 <div>
                                   <Badge variant="outline" className="mb-2">
-                                    Identificador
+                                    Identifier
                                   </Badge>
                                   <h4 className="font-semibold text-lg">
                                     transit_id
                                   </h4>
                                 </div>
-                                <Badge>Texto</Badge>
+                                <Badge>Text</Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Identificador único do candidato (ex:
+                                Unique identifier of the candidate (e.g.:
                                 "K00001.01", "TESS-123", etc.)
                               </p>
                               <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Exemplo: "KOI-001", "K2-42b", "TOI-700"
+                                Example: "KOI-001", "K2-42b", "TOI-700"
                               </div>
                             </div>
 
@@ -808,20 +808,20 @@ const Classificacao = () => {
                               <div className="flex items-start justify-between">
                                 <div>
                                   <Badge variant="outline" className="mb-2">
-                                    Período Orbital
+                                    Orbital Period
                                   </Badge>
                                   <h4 className="font-semibold text-lg">
                                     pl_period
                                   </h4>
                                 </div>
-                                <Badge>Numérico</Badge>
+                                <Badge>Numeric</Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Período orbital do planeta em dias. Tempo que o
-                                planeta leva para completar uma órbita.
+                                Orbital period of the planet in days. Time the
+                                planet takes to complete one orbit.
                               </p>
                               <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Exemplo: 365.25 (dias) | Unidade: dias
+                                Example: 365.25 (days) | Unit: days
                               </div>
                             </div>
 
@@ -830,20 +830,20 @@ const Classificacao = () => {
                               <div className="flex items-start justify-between">
                                 <div>
                                   <Badge variant="outline" className="mb-2">
-                                    Duração do Trânsito
+                                    Transit Duration
                                   </Badge>
                                   <h4 className="font-semibold text-lg">
                                     pl_transit_duration
                                   </h4>
                                 </div>
-                                <Badge>Numérico</Badge>
+                                <Badge>Numeric</Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Duração do trânsito em horas. Tempo que o
-                                planeta leva para cruzar o disco estelar.
+                                Transit duration in hours. Time the planet takes
+                                to cross the stellar disk.
                               </p>
                               <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Exemplo: 3.2 (horas) | Unidade: horas
+                                Example: 3.2 (hours) | Unit: hours
                               </div>
                             </div>
 
@@ -852,20 +852,20 @@ const Classificacao = () => {
                               <div className="flex items-start justify-between">
                                 <div>
                                   <Badge variant="outline" className="mb-2">
-                                    Profundidade do Trânsito
+                                    Transit Depth
                                   </Badge>
                                   <h4 className="font-semibold text-lg">
                                     pl_transit_depth
                                   </h4>
                                 </div>
-                                <Badge>Numérico</Badge>
+                                <Badge>Numeric</Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Diminuição relativa do brilho estelar durante o
-                                trânsito (em partes por milhão).
+                                Relative decrease in stellar brightness during
+                                transit (in parts per million).
                               </p>
                               <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Exemplo: 84.0 (ppm) | Unidade: partes por milhão
+                                Example: 84.0 (ppm) | Unit: parts per million
                               </div>
                             </div>
 
@@ -874,21 +874,20 @@ const Classificacao = () => {
                               <div className="flex items-start justify-between">
                                 <div>
                                   <Badge variant="outline" className="mb-2">
-                                    Raio Planetário
+                                    Planetary Radius
                                   </Badge>
                                   <h4 className="font-semibold text-lg">
                                     pl_radius
                                   </h4>
                                 </div>
-                                <Badge>Numérico</Badge>
+                                <Badge>Numeric</Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Raio do planeta em raios terrestres (R⊕). Terra
-                                = 1.0
+                                Planet radius in Earth radii (R⊕). Earth = 1.0
                               </p>
                               <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Exemplo: 1.0 (raios terrestres) | Terra = 1.0,
-                                Júpiter ≈ 11.2
+                                Example: 1.0 (Earth radii) | Earth = 1.0,
+                                Jupiter ≈ 11.2
                               </div>
                             </div>
 
@@ -897,20 +896,20 @@ const Classificacao = () => {
                               <div className="flex items-start justify-between">
                                 <div>
                                   <Badge variant="outline" className="mb-2">
-                                    Temperatura de Equilíbrio
+                                    Equilibrium Temperature
                                   </Badge>
                                   <h4 className="font-semibold text-lg">
                                     pl_eq_temp
                                   </h4>
                                 </div>
-                                <Badge>Numérico</Badge>
+                                <Badge>Numeric</Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Temperatura de equilíbrio do planeta em Kelvin,
-                                assumindo albedo zero.
+                                Planet's equilibrium temperature in Kelvin,
+                                assuming zero albedo.
                               </p>
                               <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Exemplo: 288 (K) | Terra ≈ 255K, zona habitável
+                                Example: 288 (K) | Earth ≈ 255K, habitable zone
                                 ≈ 200-300K
                               </div>
                             </div>
@@ -920,20 +919,20 @@ const Classificacao = () => {
                               <div className="flex items-start justify-between">
                                 <div>
                                   <Badge variant="outline" className="mb-2">
-                                    Fluxo de Insolação
+                                    Insolation Flux
                                   </Badge>
                                   <h4 className="font-semibold text-lg">
                                     pl_insolation_flux
                                   </h4>
                                 </div>
-                                <Badge>Numérico</Badge>
+                                <Badge>Numeric</Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Fluxo estelar incidente no planeta em unidades
-                                de fluxo terrestre.
+                                Stellar flux incident on the planet in Earth
+                                flux units.
                               </p>
                               <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Exemplo: 1.0 (fluxo terrestre) | Terra = 1.0
+                                Example: 1.0 (Earth flux) | Earth = 1.0
                               </div>
                             </div>
 
@@ -942,20 +941,20 @@ const Classificacao = () => {
                               <div className="flex items-start justify-between">
                                 <div>
                                   <Badge variant="outline" className="mb-2">
-                                    Temperatura Estelar
+                                    Stellar Temperature
                                   </Badge>
                                   <h4 className="font-semibold text-lg">
                                     st_eff_temp
                                   </h4>
                                 </div>
-                                <Badge>Numérico</Badge>
+                                <Badge>Numeric</Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Temperatura efetiva da estrela hospedeira em
+                                Effective temperature of the host star in
                                 Kelvin.
                               </p>
                               <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Exemplo: 5778 (K) | Sol = 5778K
+                                Example: 5778 (K) | Sun = 5778K
                               </div>
                             </div>
 
@@ -964,20 +963,20 @@ const Classificacao = () => {
                               <div className="flex items-start justify-between">
                                 <div>
                                   <Badge variant="outline" className="mb-2">
-                                    Raio Estelar
+                                    Stellar Radius
                                   </Badge>
                                   <h4 className="font-semibold text-lg">
                                     st_radius
                                   </h4>
                                 </div>
-                                <Badge>Numérico</Badge>
+                                <Badge>Numeric</Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Raio da estrela hospedeira em raios solares
-                                (R☉). Sol = 1.0
+                                Radius of the host star in solar radii (R☉). Sun
+                                = 1.0
                               </p>
                               <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Exemplo: 1.0 (raios solares) | Sol = 1.0
+                                Example: 1.0 (solar radii) | Sun = 1.0
                               </div>
                             </div>
 
@@ -986,20 +985,20 @@ const Classificacao = () => {
                               <div className="flex items-start justify-between">
                                 <div>
                                   <Badge variant="outline" className="mb-2">
-                                    Gravidade Superficial
+                                    Surface Gravity
                                   </Badge>
                                   <h4 className="font-semibold text-lg">
                                     st_logg
                                   </h4>
                                 </div>
-                                <Badge>Numérico</Badge>
+                                <Badge>Numeric</Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                Logaritmo da gravidade superficial da estrela
+                                Logarithm of the star's surface gravity
                                 (log₁₀[cm/s²]).
                               </p>
                               <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Exemplo: 4.44 (log₁₀[cm/s²]) | Sol ≈ 4.44
+                                Example: 4.44 (log₁₀[cm/s²]) | Sun ≈ 4.44
                               </div>
                             </div>
                           </div>
@@ -1009,31 +1008,29 @@ const Classificacao = () => {
                               onClick={handleDownloadExampleCSV}
                               className="flex-1 gap-2">
                               <Download className="h-4 w-4" />
-                              Baixar CSV de Exemplo
+                              Download Example CSV
                             </Button>
                           </div>
 
                           <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                             <h5 className="font-semibold text-sm mb-2 flex items-center gap-2">
                               <Info className="h-4 w-4" />
-                              Dicas Importantes
+                              Important Tips
                             </h5>
                             <ul className="text-sm space-y-1 text-muted-foreground list-disc list-inside">
                               <li>
-                                Todas as colunas são obrigatórias para o modelo
-                                funcionar
+                                All columns are required for the model to work
                               </li>
                               <li>
-                                Valores numéricos devem usar ponto (.) como
-                                separador decimal
+                                Numeric values must use dot (.) as decimal
+                                separator
                               </li>
                               <li>
-                                O arquivo deve estar em formato CSV com
-                                separador por vírgula
+                                The file must be in CSV format with comma
+                                separator
                               </li>
                               <li>
-                                Certifique-se de que não há valores vazios ou
-                                inválidos
+                                Make sure there are no empty or invalid values
                               </li>
                             </ul>
                           </div>
@@ -1075,11 +1072,11 @@ const Classificacao = () => {
                       <div>
                         <CardTitle className="flex items-center gap-2">
                           <FileText className="h-5 w-5 text-blue-500" />
-                          Visualização dos Dados
+                          Data Preview
                         </CardTitle>
                         <CardDescription>
-                          {csvData.length} registros carregados • Revise antes
-                          de classificar
+                          {csvData.length} records loaded • Review before
+                          classifying
                         </CardDescription>
                       </div>
                       <Button
@@ -1091,19 +1088,19 @@ const Classificacao = () => {
                           setCsvData([]);
                         }}>
                         <X className="h-4 w-4 mr-2" />
-                        Trocar Arquivo
+                        Change File
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* Estatísticas Rápidas */}
+                    {/* Quick Statistics */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="bg-muted rounded-lg p-3 text-center">
                         <div className="text-2xl font-bold text-blue-600">
                           {csvData.length}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Total de Registros
+                          Total Records
                         </div>
                       </div>
                       <div className="bg-muted rounded-lg p-3 text-center">
@@ -1111,7 +1108,7 @@ const Classificacao = () => {
                           {Object.keys(csvData[0] || {}).length}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Colunas
+                          Columns
                         </div>
                       </div>
                       <div className="bg-muted rounded-lg p-3 text-center">
@@ -1119,7 +1116,7 @@ const Classificacao = () => {
                           {((file?.size || 0) / 1024).toFixed(1)} KB
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Tamanho
+                          Size
                         </div>
                       </div>
                       <div className="bg-muted rounded-lg p-3 text-center">
@@ -1127,12 +1124,12 @@ const Classificacao = () => {
                           {Math.ceil(csvData.length / previewItemsPerPage)}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Páginas
+                          Pages
                         </div>
                       </div>
                     </div>
 
-                    {/* Tabela de Preview */}
+                    {/* Preview Table */}
                     <div className="border rounded-lg">
                       <ScrollArea className="h-[400px]">
                         <Table>
@@ -1175,17 +1172,17 @@ const Classificacao = () => {
                       </ScrollArea>
                     </div>
 
-                    {/* Paginação do Preview */}
+                    {/* Preview Pagination */}
                     {csvData.length > previewItemsPerPage && (
                       <div className="flex items-center justify-between">
                         <div className="text-sm text-muted-foreground">
-                          Mostrando{" "}
-                          {(previewPage - 1) * previewItemsPerPage + 1} a{" "}
+                          Showing {(previewPage - 1) * previewItemsPerPage + 1}{" "}
+                          to{" "}
                           {Math.min(
                             previewPage * previewItemsPerPage,
                             csvData.length
                           )}{" "}
-                          de {csvData.length} registros
+                          of {csvData.length} records
                         </div>
                         <div className="flex items-center gap-2">
                           <Button
@@ -1203,7 +1200,7 @@ const Classificacao = () => {
                             <ChevronLeft className="h-4 w-4" />
                           </Button>
                           <span className="text-sm px-4">
-                            Página {previewPage} de{" "}
+                            Page {previewPage} of{" "}
                             {Math.ceil(csvData.length / previewItemsPerPage)}
                           </span>
                           <Button
@@ -1240,7 +1237,7 @@ const Classificacao = () => {
 
             {file && !isProcessing && !results && showDataPreview && (
               <Button onClick={handleClassify} size="lg" className="w-full">
-                Classificar com Specttra
+                Classify with Specttra
               </Button>
             )}
 
@@ -1251,7 +1248,7 @@ const Classificacao = () => {
                     <div className="flex items-center gap-2">
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
                       <span className="text-sm font-medium">
-                        Processando dados...
+                        Processing data...
                       </span>
                     </div>
                     <Progress value={66} />
@@ -1267,23 +1264,23 @@ const Classificacao = () => {
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        Resultados da Classificação
+                        Classification Results
                       </CardTitle>
                       <CardDescription>
-                        {getFilteredResults().length} de {results.total} objetos{" "}
+                        {getFilteredResults().length} of {results.total} objects{" "}
                         {filterPrediction !== "all" &&
-                          `(filtrados por ${filterPrediction})`}
+                          `(filtered by ${filterPrediction})`}
                       </CardDescription>
                     </div>
 
-                    {/* Toggle de visualização */}
+                    {/* View toggle */}
                     <div className="flex gap-2">
                       <Button
                         variant={viewMode === "table" ? "default" : "outline"}
                         size="sm"
                         onClick={() => setViewMode("table")}>
                         <TableIcon className="h-4 w-4 mr-2" />
-                        Tabela
+                        Table
                       </Button>
                       <Button
                         variant={viewMode === "cards" ? "default" : "outline"}
@@ -1296,7 +1293,7 @@ const Classificacao = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Resumo Dinâmico */}
+                  {/* Dynamic Summary */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {Object.entries(getDynamicSummary()).map(
                       ([label, count]) => (
@@ -1324,7 +1321,7 @@ const Classificacao = () => {
                     )}
                   </div>
 
-                  {/* Filtros */}
+                  {/* Filters */}
                   <div className="flex items-center gap-4">
                     <Select
                       value={filterPrediction}
@@ -1333,21 +1330,21 @@ const Classificacao = () => {
                         setCurrentPage(1);
                       }}>
                       <SelectTrigger className="w-[220px]">
-                        <SelectValue placeholder="Filtrar por classificação" />
+                        <SelectValue placeholder="Filter by classification" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="all">All</SelectItem>
                         <SelectItem value="PLANETA CONFIRMADO">
-                          Planeta Confirmado
+                          Confirmed Planet
                         </SelectItem>
                         <SelectItem value="CANDIDATO FORTE">
-                          Candidato Forte
+                          Strong Candidate
                         </SelectItem>
                         <SelectItem value="CANDIDATO FRACO">
-                          Candidato Fraco
+                          Weak Candidate
                         </SelectItem>
                         <SelectItem value="FALSO POSITIVO">
-                          Falso Positivo
+                          False Positive
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -1522,36 +1519,36 @@ const Classificacao = () => {
                     </div>
                   )}
 
-                  {/* Paginação */}
+                  {/* Pagination */}
                   {totalPages > 1 && (
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
                       <div className="text-sm text-muted-foreground">
-                        Página {currentPage} de {totalPages} (
-                        {getFilteredResults().length} resultados)
+                        Page {currentPage} of {totalPages} (
+                        {getFilteredResults().length} results)
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {/* Primeira Página */}
+                        {/* First Page */}
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handlePageChange(1)}
                           disabled={currentPage === 1}
-                          title="Primeira página">
+                          title="First page">
                           <ChevronsLeft className="h-4 w-4" />
                         </Button>
 
-                        {/* Página Anterior */}
+                        {/* Previous Page */}
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handlePageChange(currentPage - 1)}
                           disabled={currentPage === 1}
-                          title="Página anterior">
+                          title="Previous page">
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
 
-                        {/* Input de Página */}
+                        {/* Page Input */}
                         <form
                           onSubmit={handlePageInputSubmit}
                           className="flex items-center gap-2">
@@ -1563,43 +1560,43 @@ const Classificacao = () => {
                             onChange={handlePageInputChange}
                             onBlur={handlePageInputSubmit}
                             className="w-16 h-9 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            title="Digite o número da página"
+                            title="Enter page number"
                           />
                           <span className="text-sm text-muted-foreground">
                             / {totalPages}
                           </span>
                         </form>
 
-                        {/* Página Seguinte */}
+                        {/* Next Page */}
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handlePageChange(currentPage + 1)}
                           disabled={currentPage === totalPages}
-                          title="Próxima página">
+                          title="Next page">
                           <ChevronRight className="h-4 w-4" />
                         </Button>
 
-                        {/* Última Página */}
+                        {/* Last Page */}
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handlePageChange(totalPages)}
                           disabled={currentPage === totalPages}
-                          title="Última página">
+                          title="Last page">
                           <ChevronsRight className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   )}
 
-                  {/* Controle de Threshold Discreto */}
+                  {/* Discrete Threshold Control */}
                   <details className="group">
                     <summary className="flex items-center justify-between cursor-pointer list-none p-3 rounded-lg hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-2">
                         <Settings className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-medium">
-                          Configurações Avançadas
+                          Advanced Settings
                         </span>
                       </div>
                       <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
@@ -1607,7 +1604,9 @@ const Classificacao = () => {
                     <div className="mt-3 p-4 border rounded-lg bg-muted/30 space-y-3">
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <Label className="text-sm">Limite de Confiança</Label>
+                          <Label className="text-sm">
+                            Confidence Threshold
+                          </Label>
                           <span className="text-sm font-semibold text-primary">
                             {(classificationThreshold[0] * 100).toFixed(0)}%
                           </span>
@@ -1624,12 +1623,11 @@ const Classificacao = () => {
                           className="w-full"
                         />
                         <p className="text-xs text-muted-foreground mt-2">
-                          Ajusta o nível de confiança para classificação dos
-                          resultados
+                          Adjusts the confidence level for result classification
                         </p>
                       </div>
 
-                      {/* Legenda compacta */}
+                      {/* Compact legend */}
                       <div className="flex flex-wrap gap-2 text-xs">
                         <div className="flex items-center gap-1">
                           <Badge variant="default" className="h-5 text-xs">
@@ -1641,7 +1639,7 @@ const Classificacao = () => {
                         </div>
                         <div className="flex items-center gap-1">
                           <Badge variant="secondary" className="h-5 text-xs">
-                            FORTE
+                            STRONG
                           </Badge>
                           <span className="text-muted-foreground">
                             ≥
@@ -1654,7 +1652,7 @@ const Classificacao = () => {
                         </div>
                         <div className="flex items-center gap-1">
                           <Badge variant="outline" className="h-5 text-xs">
-                            FRACO
+                            WEAK
                           </Badge>
                           <span className="text-muted-foreground">
                             ≥
@@ -1673,7 +1671,7 @@ const Classificacao = () => {
                     variant="outline"
                     onClick={handleExportCSV}>
                     <Download className="h-4 w-4 mr-2" />
-                    Exportar Resultados (CSV)
+                    Export Results (CSV)
                   </Button>
                 </CardContent>
               </Card>

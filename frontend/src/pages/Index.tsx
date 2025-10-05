@@ -23,7 +23,7 @@ import {
 const missionData = [
   {
     mission: "Kepler (KOI)",
-    descobertas: 2335,
+    discoveries: 2335,
     accuracy: 0.93,
     f1: 0.9,
     rocAuc: 0.97,
@@ -31,7 +31,7 @@ const missionData = [
   },
   {
     mission: "K2",
-    descobertas: 479,
+    discoveries: 479,
     accuracy: 0.91,
     f1: 0.88,
     rocAuc: 0.95,
@@ -39,7 +39,7 @@ const missionData = [
   },
   {
     mission: "TESS",
-    descobertas: 387,
+    discoveries: 387,
     accuracy: 0.92,
     f1: 0.89,
     rocAuc: 0.96,
@@ -78,25 +78,25 @@ const Index = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}>
               <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                Detecte Exoplanetas com{" "}
+                Detect Exoplanets with{" "}
                 <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                  Inteligência Artificial
+                  Artificial Intelligence
                 </span>
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Algoritmo proprietário treinado em dados de missões Kepler, K2 e
-                TESS. Classifique candidatos a exoplanetas com precisão de até
-                97% ROC-AUC.
+                Proprietary algorithm trained on Kepler, K2 and TESS mission
+                data. Classify exoplanet candidates with up to 97% ROC-AUC
+                accuracy.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" asChild className="group">
                   <Link to="/classificacao">
-                    Classificar CSV Agora
+                    Classify CSV Now
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
-                  <a href="#metricas">Ver Métricas</a>
+                  <a href="#metricas">View Metrics</a>
                 </Button>
               </div>
             </motion.div>
@@ -109,7 +109,7 @@ const Index = () => {
               <div className="relative animate-float">
                 <img
                   src={heroImage}
-                  alt="Exoplaneta orbitando estrela distante"
+                  alt="Exoplanet orbiting distant star"
                   className="rounded-2xl shadow-2xl"
                 />
               </div>
@@ -129,23 +129,23 @@ const Index = () => {
             viewport={{ once: true }}
             className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4">
-              Performance do Modelo Specttra
+              Specttra Model Performance
             </h2>
             <p className="text-xl text-muted-foreground">
-              Métricas validadas em dados reais de missões espaciais
+              Metrics validated on real space mission data
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <MetricCard
-              title="Total de Exoplanetas"
+              title="Total Exoplanets"
               value="3,201"
-              description="Confirmados nas missões"
+              description="Confirmed in missions"
               icon={<Database className="h-4 w-4" />}
               delay={0}
             />
             <MetricCard
-              title={loading ? "Carregando..." : "Acurácia do Modelo"}
+              title={loading ? "Loading..." : "Model Accuracy"}
               value={
                 loading
                   ? "..."
@@ -156,9 +156,9 @@ const Index = () => {
               delay={0.1}
             />
             <MetricCard
-              title={loading ? "Carregando..." : "ROC-AUC Score"}
+              title={loading ? "Loading..." : "ROC-AUC Score"}
               value={loading ? "..." : realMetrics?.AUC_ROC_Media.toFixed(3)}
-              description="Excelente discriminação"
+              description="Excellent discrimination"
               icon={<Cpu className="h-4 w-4" />}
               delay={0.2}
             />
@@ -170,7 +170,7 @@ const Index = () => {
             viewport={{ once: true }}
             className="bg-card rounded-2xl p-8 shadow-lg">
             <h3 className="text-2xl font-bold mb-6">
-              Descobertas e Performance por Missão
+              Discoveries and Performance by Mission
             </h3>
             <ResponsiveContainer width="100%" height={400}>
               <ComposedChart data={missionData}>
@@ -192,8 +192,8 @@ const Index = () => {
                 <Legend />
                 <Bar
                   yAxisId="left"
-                  dataKey="descobertas"
-                  name="Descobertas"
+                  dataKey="discoveries"
+                  name="Discoveries"
                   fill="hsl(var(--chart-1))"
                 />
                 <Line
@@ -258,9 +258,9 @@ const Index = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Como Funciona?</h2>
+            <h2 className="text-4xl font-bold mb-4">How It Works?</h2>
             <p className="text-xl text-muted-foreground">
-              Três passos simples para classificar seus dados
+              Three simple steps to classify your data
             </p>
           </motion.div>
 
@@ -268,21 +268,21 @@ const Index = () => {
             {[
               {
                 step: "1",
-                title: "Carregue seu CSV",
+                title: "Upload Your CSV",
                 description:
-                  "Faça upload de dados com features de trânsito como período orbital, duração, profundidade e SNR.",
+                  "Upload data with transit features like orbital period, duration, depth and SNR.",
               },
               {
                 step: "2",
-                title: "Classifique",
+                title: "Classify",
                 description:
-                  "Nosso modelo proprietário analisa cada candidato e retorna probabilidades para cada classe.",
+                  "Our proprietary model analyzes each candidate and returns probabilities for each class.",
               },
               {
                 step: "3",
                 title: "Fine Tuning (Premium)",
                 description:
-                  "Ajuste o modelo com seus próprios dados rotulados para melhorar ainda mais a precisão.",
+                  "Tune the model with your own labeled data to further improve accuracy.",
               },
             ].map((item, idx) => (
               <motion.div
@@ -308,7 +308,7 @@ const Index = () => {
             className="text-center mt-12">
             <Button size="lg" asChild>
               <Link to="/classificacao">
-                Começar Agora
+                Start Now
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -320,7 +320,7 @@ const Index = () => {
       <footer className="border-t border-border/40 py-8">
         <div className="container text-center text-sm text-muted-foreground">
           <p>
-            © 2025 Specttra. Classificação de exoplanetas com Machine Learning.
+            © 2025 Specttra. Exoplanet classification with Machine Learning.
           </p>
         </div>
       </footer>
