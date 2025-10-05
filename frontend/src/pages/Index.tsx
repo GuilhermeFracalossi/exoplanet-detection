@@ -128,7 +128,7 @@ const Index = () => {
               <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                 Detect Exoplanets with{" "}
                 <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                  Artificial Intelligence
+                  Specttra
                 </span>
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
