@@ -87,13 +87,15 @@ const Index = () => {
   // Preparar dados para comparação por satélite
   const getSatelliteComparisonData = () => {
     if (!satelliteMetrics) return [];
-    return Object.entries(satelliteMetrics).map(([satellite, metrics]: [string, any]) => ({
-      satellite,
-      Accuracy: (metrics.acuracia * 100).toFixed(1),
-      "F1-Score": (metrics.f1_score_planeta * 100).toFixed(1),
-      Recall: (metrics.recall_planeta * 100).toFixed(1),
-      Precision: (metrics.precisao_planeta * 100).toFixed(1),
-    }));
+    return Object.entries(satelliteMetrics).map(
+      ([satellite, metrics]: [string, any]) => ({
+        satellite,
+        Accuracy: (metrics.acuracia * 100).toFixed(1),
+        "F1-Score": (metrics.f1_score_planeta * 100).toFixed(1),
+        Recall: (metrics.recall_planeta * 100).toFixed(1),
+        Precision: (metrics.precisao_planeta * 100).toFixed(1),
+      })
+    );
   };
 
   // Custom Tooltip para o gráfico de barras
@@ -104,7 +106,8 @@ const Index = () => {
           <p className="font-semibold mb-2">{label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: <span className="font-semibold">{entry.value}%</span>
+              {entry.name}:{" "}
+              <span className="font-semibold">{entry.value}%</span>
             </p>
           ))}
         </div>
@@ -195,9 +198,7 @@ const Index = () => {
             <MetricCard
               title={loading ? "Loading..." : "Model Accuracy"}
               value={
-                loading
-                  ? "..."
-                  : `${(realMetrics?.acuracia * 100).toFixed(1)}%`
+                loading ? "..." : `${(realMetrics?.acuracia * 100).toFixed(1)}%`
               }
               description="Test Set Performance"
               icon={<TrendingUp className="h-4 w-4" />}
@@ -212,9 +213,9 @@ const Index = () => {
             />
           </div>
 
-          {/* Gráficos de Performance do Modelo */}
+          {/* Model Performance Charts */}
           <div className="grid lg:grid-cols-2 gap-6 mb-12">
-            {/* Radar Chart - Visão geral das métricas */}
+            {/* Radar Chart - Metrics Overview */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -228,20 +229,25 @@ const Index = () => {
               </p>
               {loading ? (
                 <div className="h-[380px] flex items-center justify-center">
-                  <div className="text-muted-foreground">Loading metrics...</div>
+                  <div className="text-muted-foreground">
+                    Loading metrics...
+                  </div>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={380}>
                   <RadarChart data={getRadarData()}>
                     <PolarGrid stroke="hsl(var(--border))" />
-                    <PolarAngleAxis 
-                      dataKey="metric" 
+                    <PolarAngleAxis
+                      dataKey="metric"
                       tick={{ fill: "hsl(var(--foreground))", fontSize: 14 }}
                     />
-                    <PolarRadiusAxis 
-                      angle={90} 
+                    <PolarRadiusAxis
+                      angle={90}
                       domain={[0, 100]}
-                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                      tick={{
+                        fill: "hsl(var(--muted-foreground))",
+                        fontSize: 12,
+                      }}
                     />
                     <Radar
                       name="Specttra Model"
@@ -280,26 +286,47 @@ const Index = () => {
               </p>
               {loading ? (
                 <div className="h-[380px] flex items-center justify-center">
-                  <div className="text-muted-foreground">Loading metrics...</div>
+                  <div className="text-muted-foreground">
+                    Loading metrics...
+                  </div>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={380}>
                   <BarChart data={getSatelliteComparisonData()}>
                     <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                    <XAxis 
-                      dataKey="satellite" 
+                    <XAxis
+                      dataKey="satellite"
                       tick={{ fill: "hsl(var(--foreground))", fontSize: 14 }}
                     />
-                    <YAxis 
-                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                    <YAxis
+                      tick={{
+                        fill: "hsl(var(--muted-foreground))",
+                        fontSize: 12,
+                      }}
                       domain={[0, 100]}
                     />
                     <Tooltip content={<CustomBarTooltip />} />
                     <Legend wrapperStyle={{ fontSize: "14px" }} />
-                    <Bar dataKey="Accuracy" fill="hsl(var(--chart-1))" radius={[8, 8, 0, 0]} />
-                    <Bar dataKey="F1-Score" fill="hsl(var(--chart-2))" radius={[8, 8, 0, 0]} />
-                    <Bar dataKey="Recall" fill="hsl(var(--chart-3))" radius={[8, 8, 0, 0]} />
-                    <Bar dataKey="Precision" fill="hsl(var(--chart-4))" radius={[8, 8, 0, 0]} />
+                    <Bar
+                      dataKey="Accuracy"
+                      fill="hsl(var(--chart-1))"
+                      radius={[8, 8, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="F1-Score"
+                      fill="hsl(var(--chart-2))"
+                      radius={[8, 8, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="Recall"
+                      fill="hsl(var(--chart-3))"
+                      radius={[8, 8, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="Precision"
+                      fill="hsl(var(--chart-4))"
+                      radius={[8, 8, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -307,71 +334,81 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 mt-12">
-            {loading ? (
-              // Loading placeholder
-              [1, 2, 3].map((idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="bg-card rounded-2xl p-6 shadow-lg">
-                  <h4 className="text-lg font-bold mb-4">Loading...</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Accuracy:</span>
-                      <span className="font-semibold">...</span>
+            {loading
+              ? // Loading placeholder
+                [1, 2, 3].map((idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="bg-card rounded-2xl p-6 shadow-lg">
+                    <h4 className="text-lg font-bold mb-4">Loading...</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Accuracy:</span>
+                        <span className="font-semibold">...</span>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))
-            ) : satelliteMetrics ? (
-              // Real satellite metrics
-              Object.entries(satelliteMetrics).map(([satellite, metrics]: [string, any], idx) => (
-                <motion.div
-                  key={satellite}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="bg-card rounded-2xl p-6 shadow-lg">
-                  <h4 className="text-lg font-bold mb-4">{satellite}</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Accuracy:</span>
-                      <span className="font-semibold">
-                        {(metrics.acuracia * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">F1-Score:</span>
-                      <span className="font-semibold">
-                        {(metrics.f1_score_planeta * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Recall:</span>
-                      <span className="font-semibold">
-                        {(metrics.recall_planeta * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Precision:</span>
-                      <span className="font-semibold">
-                        {(metrics.precisao_planeta * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">ROC-AUC:</span>
-                      <span className="font-semibold">
-                        {metrics.auc_roc.toFixed(3)}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))
-            ) : null}
+                  </motion.div>
+                ))
+              : satelliteMetrics
+              ? // Real satellite metrics
+                Object.entries(satelliteMetrics).map(
+                  ([satellite, metrics]: [string, any], idx) => (
+                    <motion.div
+                      key={satellite}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="bg-card rounded-2xl p-6 shadow-lg">
+                      <h4 className="text-lg font-bold mb-4">{satellite}</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Accuracy:
+                          </span>
+                          <span className="font-semibold">
+                            {(metrics.acuracia * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            F1-Score:
+                          </span>
+                          <span className="font-semibold">
+                            {(metrics.f1_score_planeta * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Recall:</span>
+                          <span className="font-semibold">
+                            {(metrics.recall_planeta * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Precision:
+                          </span>
+                          <span className="font-semibold">
+                            {(metrics.precisao_planeta * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            ROC-AUC:
+                          </span>
+                          <span className="font-semibold">
+                            {metrics.auc_roc.toFixed(3)}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )
+                )
+              : null}
           </div>
         </div>
       </section>

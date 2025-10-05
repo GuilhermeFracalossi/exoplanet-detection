@@ -129,24 +129,43 @@ const CustomModelClassify = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      setFile(selectedFile);
 
       try {
+        // Validate IMMEDIATELY before processing
+        const isValid = await validateCSVColumns(selectedFile);
+
+        if (!isValid) {
+          // Clear the file input and state if validation fails
+          e.target.value = "";
+          setFile(null);
+          setCsvData([]);
+          setShowDataPreview(false);
+          return;
+        }
+
+        // File is valid - proceed to parse
+        setFile(selectedFile);
         const data = await parseCSV(selectedFile);
         setCsvData(data);
         setShowDataPreview(true);
         setPreviewPage(1);
 
         toast({
-          title: "File loaded",
-          description: `${data.length} records found. Review the data before classifying.`,
+          title: "File loaded successfully ✓",
+          description: `${data.length} records found and validated. Review the data before classifying.`,
         });
       } catch (error) {
+        console.error("Error processing file:", error);
         toast({
           title: "Error reading file",
           description: "Could not process the CSV file.",
           variant: "destructive",
         });
+        // Clear on error
+        e.target.value = "";
+        setFile(null);
+        setCsvData([]);
+        setShowDataPreview(false);
       }
     }
   };
@@ -184,42 +203,82 @@ const CustomModelClassify = () => {
   };
 
   const validateCSVColumns = async (file: File): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const reader = new FileReader();
 
       reader.onload = (e) => {
-        const text = e.target?.result as string;
-        const firstLine = text.split("\n")[0];
-        const columns = firstLine
-          .split(",")
-          .map((col) => col.trim().replace(/['"]/g, ""));
+        try {
+          const text = e.target?.result as string;
 
-        const requiredColumns = [
-          "transit_id",
-          "pl_period",
-          "pl_transit_duration",
-          "pl_radius",
-          "st_eff_temp",
-          "st_radius",
-        ];
+          // Check if file is empty
+          if (!text || text.trim().length === 0) {
+            toast({
+              title: "Validation Error",
+              description: "The CSV file is empty.",
+              variant: "destructive",
+            });
+            resolve(false);
+            return;
+          }
 
-        const missingColumns = requiredColumns.filter(
-          (col) => !columns.includes(col)
-        );
+          const lines = text.split("\n").filter((line) => line.trim());
 
-        if (missingColumns.length > 0) {
+          // Check if there's at least a header line
+          if (lines.length === 0) {
+            toast({
+              title: "Validation Error",
+              description: "No data found in the CSV file.",
+              variant: "destructive",
+            });
+            resolve(false);
+            return;
+          }
+
+          const firstLine = lines[0];
+          const columns = firstLine
+            .split(",")
+            .map((col) => col.trim().replace(/['"]/g, "").toLowerCase());
+
+          console.log("CSV Columns found:", columns);
+
+          const requiredColumns = [
+            "transit_id",
+            "pl_period",
+            "pl_transit_duration",
+            "pl_radius",
+            "st_eff_temp",
+            "st_radius",
+          ];
+
+          const missingColumns = requiredColumns.filter(
+            (col) => !columns.includes(col.toLowerCase())
+          );
+
+          if (missingColumns.length > 0) {
+            console.log("Missing columns:", missingColumns);
+            toast({
+              title: "Validation Error",
+              description: `Missing required columns: ${missingColumns.join(
+                ", "
+              )}`,
+              variant: "destructive",
+            });
+            resolve(false);
+          } else {
+            toast({
+              title: "CSV Validated ✓",
+              description: "All required columns were found!",
+            });
+            resolve(true);
+          }
+        } catch (error) {
+          console.error("Error validating CSV:", error);
           toast({
             title: "Validation Error",
-            description: `Missing columns: ${missingColumns.join(", ")}`,
+            description: "Could not parse the CSV file.",
             variant: "destructive",
           });
           resolve(false);
-        } else {
-          toast({
-            title: "Validation OK",
-            description: "All required columns were found!",
-          });
-          resolve(true);
         }
       };
 
@@ -229,7 +288,7 @@ const CustomModelClassify = () => {
           description: "Could not read the CSV file.",
           variant: "destructive",
         });
-        reject(false);
+        resolve(false);
       };
 
       reader.readAsText(file);
@@ -278,13 +337,7 @@ const CustomModelClassify = () => {
     setIsProcessing(true);
 
     try {
-      const isValid = await validateCSVColumns(file);
-
-      if (!isValid) {
-        setIsProcessing(false);
-        return;
-      }
-
+      // File is already validated during upload - proceed directly to API
       const apiData = await sendCSVToAPI(file);
       const csvData = await parseCSV(file);
       const apiDataArray = Array.isArray(apiData) ? apiData : [apiData];
