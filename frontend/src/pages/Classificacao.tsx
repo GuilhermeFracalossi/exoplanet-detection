@@ -647,17 +647,14 @@ const Classificacao = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">
-            Classificação de Exoplanetas
-          </h1>
+          <h1 className="text-4xl font-bold mb-2">Exoplanet Classification</h1>
           <p className="text-xl text-muted-foreground">
-            Faça upload do seu CSV e classifique candidatos usando nosso modelo
-            Specttra
+            Upload your CSV and classify candidates using our Specttra model
           </p>
         </motion.div>
 
         <div className="space-y-6">
-          {/* Sobre o Modelo */}
+          {/* About the Model */}
           {!loadingModelInfo && modelInfo && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1357,12 +1354,11 @@ const Classificacao = () => {
                           setFilterPrediction("all");
                           setCurrentPage(1);
                         }}>
-                        Limpar filtro
+                        Clear filter
                       </Button>
                     )}
                   </div>
 
-                  {/* Visualização em Tabela */}
                   {viewMode === "table" && (
                     <div className="border rounded-lg">
                       <ScrollArea className="w-full">
@@ -1370,12 +1366,12 @@ const Classificacao = () => {
                           <TableHeader>
                             <TableRow>
                               <TableHead className="w-[120px]">ID</TableHead>
-                              <TableHead>Período (d)</TableHead>
-                              <TableHead>Duração (h)</TableHead>
-                              <TableHead>Prof. (ppm)</TableHead>
-                              <TableHead>Raio (R⊕)</TableHead>
+                              <TableHead>Period (d)</TableHead>
+                              <TableHead>Duration (h)</TableHead>
+                              <TableHead>Depth (ppm)</TableHead>
+                              <TableHead>Radius (R⊕)</TableHead>
                               <TableHead>Temp. (K)</TableHead>
-                              <TableHead>Classificação</TableHead>
+                              <TableHead>Classification</TableHead>
                               <TableHead className="text-right">
                                 Conf.
                               </TableHead>
@@ -1465,15 +1461,15 @@ const Classificacao = () => {
                               <div className="grid grid-cols-2 gap-3 text-sm">
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Período:
+                                    Period:
                                   </span>
                                   <div className="font-semibold">
-                                    {row.pl_period.toFixed(2)} dias
+                                    {row.pl_period.toFixed(2)} days
                                   </div>
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Duração:
+                                    Duration:
                                   </span>
                                   <div className="font-semibold">
                                     {row.pl_transit_duration.toFixed(2)} h
@@ -1481,7 +1477,7 @@ const Classificacao = () => {
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Profundidade:
+                                    Depth:
                                   </span>
                                   <div className="font-semibold">
                                     {row.pl_transit_depth_ppm.toFixed(0)} ppm
@@ -1489,7 +1485,7 @@ const Classificacao = () => {
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Raio:
+                                    Radius:
                                   </span>
                                   <div className="font-semibold">
                                     {row.pl_radius.toFixed(2)} R⊕
@@ -1497,7 +1493,7 @@ const Classificacao = () => {
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Temp. Eq.:
+                                    Eq. Temp.:
                                   </span>
                                   <div className="font-semibold">
                                     {row.pl_eq_temp.toFixed(0)} K
@@ -1505,7 +1501,7 @@ const Classificacao = () => {
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Fluxo:
+                                    Flux:
                                   </span>
                                   <div className="font-semibold">
                                     {row.pl_insolation_flux.toFixed(1)}
