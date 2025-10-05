@@ -662,13 +662,15 @@ const Classificacao = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container pt-24 pb-16 max-w-5xl mx-auto">
+      <main className="container pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Exoplanet Classification</h1>
-          <p className="text-xl text-muted-foreground">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+            Exoplanet Classification
+          </h1>
+          <p className="text-lg sm:text-xl text-muted-foreground">
             Upload your CSV and classify candidates using our Specttra model
           </p>
         </motion.div>
@@ -694,7 +696,7 @@ const Classificacao = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                     <div className="text-center p-4 bg-background/50 rounded-lg">
                       <div className="text-3xl font-bold text-primary mb-1">
                         {modelInfo.metrics?.roc_auc?.toFixed(2) || "N/A"}

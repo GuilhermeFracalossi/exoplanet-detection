@@ -34,6 +34,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
+// Helper function to format model name
+const formatModelName = (name: string): string => {
+  // Remove "lightgbm_" prefix if present
+  return name.replace(/^lightgbm_/, "");
+};
+
 const CreateModel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -42,22 +48,20 @@ const CreateModel = () => {
     "upload" | "config" | "training" | "complete"
   >("upload");
   const [file, setFile] = useState<File | null>(null);
-  const [modelName, setModelName] = useState("");
-  const [modelDescription, setModelDescription] = useState("");
   const [trainingProgress, setTrainingProgress] = useState(0);
   const [trainingStatus, setTrainingStatus] = useState("");
 
   const [hyperparams, setHyperparams] = useState({
-    n_estimators: 1200,
-    learning_rate: 0.005,
-    lambda_l1: 0.0000001,
-    lambda_l2: 0.15,
-    num_leaves: 256,
-    max_depth: 8,
-    feature_fraction: 0.8,
-    bagging_fraction: 0.6,
-    bagging_freq: 5,
-    min_child_samples: 20,
+    n_estimators: 1600,
+    learning_rate: 0.0028,
+    lambda_l1: 0.00000001,
+    lambda_l2: 0.2,
+    num_leaves: 350,
+    max_depth: 10,
+    feature_fraction: 0.88,
+    bagging_fraction: 0.53,
+    bagging_freq: 3,
+    min_child_samples: 16,
   });
 
   const [trainedModel, setTrainedModel] = useState<any>(null);
@@ -179,10 +183,10 @@ const CreateModel = () => {
   };
 
   const handleStartTraining = async () => {
-    if (!file || !modelName) {
+    if (!file) {
       toast({
         title: "Missing information",
-        description: "Please provide a model name and training data.",
+        description: "Please upload training data.",
         variant: "destructive",
       });
       return;
@@ -193,67 +197,89 @@ const CreateModel = () => {
     setTrainingStatus("Preparing data...");
 
     try {
-      // TODO: Replace with actual API call
-      // const formData = new FormData();
-      // formData.append("file", file);
-      // formData.append("name", modelName);
-      // formData.append("description", modelDescription);
-      // formData.append("hyperparameters", JSON.stringify(hyperparams));
-      //
-      // const response = await fetch("http://localhost:8000/api/v1/fine-tuning/train", {
-      //   method: "POST",
-      //   body: formData,
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`
-      //   }
-      // });
-      // const data = await response.json();
-      // setTrainedModel(data.model);
+      // Prepare FormData with file and hyperparameters
+      const formData = new FormData();
+      formData.append("file", file);
 
-      // Simulate training progress
-      const statuses = [
-        "Preparing data...",
-        "Validating columns...",
-        "Concatenating with base dataset...",
-        "Training model with your hyperparameters...",
-        "Calculating metrics...",
-        "Finalizing model...",
-      ];
+      // Append all hyperparameters individually
+      formData.append("n_estimators", hyperparams.n_estimators.toString());
+      formData.append("learning_rate", hyperparams.learning_rate.toString());
+      formData.append("lambda_l1", hyperparams.lambda_l1.toString());
+      formData.append("lambda_l2", hyperparams.lambda_l2.toString());
+      formData.append("num_leaves", hyperparams.num_leaves.toString());
+      formData.append("max_depth", hyperparams.max_depth.toString());
+      formData.append(
+        "feature_fraction",
+        hyperparams.feature_fraction.toString()
+      );
+      formData.append(
+        "bagging_fraction",
+        hyperparams.bagging_fraction.toString()
+      );
+      formData.append("bagging_freq", hyperparams.bagging_freq.toString());
+      formData.append(
+        "min_child_samples",
+        hyperparams.min_child_samples.toString()
+      );
 
-      for (let i = 0; i < statuses.length; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        setTrainingStatus(statuses[i]);
-        setTrainingProgress(((i + 1) / statuses.length) * 100);
+      // Show progress feedback
+      setTrainingStatus("Uploading data and starting training...");
+      setTrainingProgress(10);
+
+      const response = await fetch("http://localhost:8000/api/v1/train", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Training failed: ${response.status} - ${errorText}`);
       }
 
-      // Mock trained model result
-      const mockModel = {
-        id: `model-${Date.now()}`,
-        name: modelName,
-        description: modelDescription,
+      const data = await response.json();
+
+      console.log("Training response:", data); // Debug log
+
+      // Update progress
+      setTrainingStatus("Training completed successfully!");
+      setTrainingProgress(100);
+
+      // Extract model name from path
+      // Path format: ".../models/model_20251005_131552/lightgbm_model.pkl"
+      const pathParts = data.model_path.split(/[\\/]/);
+      const modelFolderName = pathParts[pathParts.length - 2]; // Gets "model_20251005_131552"
+
+      // Build trained model object from API response
+      const trainedModelData = {
+        id: modelFolderName,
+        name: modelFolderName, // Will be formatted in display
+        description: "Custom trained exoplanet detection model",
         created_at: new Date().toISOString(),
         metrics: {
-          roc_auc: 0.9743,
-          prc_auc: 0.9421,
-          accuracy: 0.8816,
-          precision_planet: 0.8642,
-          recall_planet: 0.8519,
-          f1_planet: 0.8579,
-          precision_non_planet: 0.8995,
-          recall_non_planet: 0.9127,
-          f1_non_planet: 0.9058,
+          accuracy: data.metrics.accuracy,
+          roc_auc: data.metrics.auc_roc,
+          prc_auc: data.metrics.auc_prc,
+          recall_planet: data.metrics.recall_planet,
+          precision_planet: data.metrics.precision_planet,
+          f1_planet: data.metrics.f1_score_planet,
         },
         hyperparameters: hyperparams,
-        training_samples: 15420,
+        model_path: data.model_path,
+        metadata_path: data.metadata_path,
+        training_samples: 0, // Not provided in response
         status: "active",
       };
 
-      setTrainedModel(mockModel);
+      console.log("Trained model data:", trainedModelData); // Debug log
+
+      setTrainedModel(trainedModelData);
       setStep("complete");
+
+      console.log("Step changed to: complete"); // Debug log
 
       toast({
         title: "Training complete!",
-        description: "Your custom model is ready to use.",
+        description: data.message || "Your custom model is ready to use.",
       });
     } catch (error) {
       console.error("Training error:", error);
@@ -272,7 +298,7 @@ const CreateModel = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container pt-24 pb-16 max-w-5xl mx-auto">
+      <main className="container pt-24 pb-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -284,11 +310,11 @@ const CreateModel = () => {
             <ArrowLeft className="h-4 w-4" />
             Back to Models
           </Button>
-          <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-            <Sparkles className="h-8 w-8 text-primary" />
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2 flex items-center gap-3">
+            <Sparkles className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
             Create Custom Model
           </h1>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-lg sm:text-xl text-muted-foreground">
             Train a personalized exoplanet detection model with your data
           </p>
         </motion.div>
@@ -301,42 +327,13 @@ const CreateModel = () => {
             className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Model Information</CardTitle>
-                <CardDescription>
-                  Give your model a name and description
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="modelName">Model Name *</Label>
-                  <Input
-                    id="modelName"
-                    placeholder="e.g., My Kepler Extended Model"
-                    value={modelName}
-                    onChange={(e) => setModelName(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="modelDescription">Description</Label>
-                  <Textarea
-                    id="modelDescription"
-                    placeholder="Brief description of your model's purpose..."
-                    value={modelDescription}
-                    onChange={(e) => setModelDescription(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5" />
                   Training Data
                 </CardTitle>
                 <CardDescription>
-                  Upload your CSV file with features and isPlanet labels
+                  Upload your CSV file with features and isPlanet labels. The
+                  model name will be automatically generated.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -390,7 +387,7 @@ const CreateModel = () => {
 
                 <Button
                   onClick={() => setStep("config")}
-                  disabled={!file || !modelName}
+                  disabled={!file}
                   size="lg"
                   className="w-full">
                   Configure Hyperparameters
@@ -750,22 +747,6 @@ const CreateModel = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="font-semibold mb-3">Model Information</h3>
-                  <div className="grid md:grid-cols-2 gap-3 text-sm">
-                    <div className="bg-background rounded-lg p-3">
-                      <span className="text-muted-foreground">Name:</span>
-                      <div className="font-semibold">{trainedModel.name}</div>
-                    </div>
-                    <div className="bg-background rounded-lg p-3">
-                      <span className="text-muted-foreground">Samples:</span>
-                      <div className="font-semibold">
-                        {trainedModel.training_samples.toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
                   <h3 className="font-semibold mb-3">Performance Metrics</h3>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="bg-background rounded-lg p-4 text-center">
@@ -794,57 +775,28 @@ const CreateModel = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 mt-3">
-                    <div className="bg-background rounded-lg p-3">
-                      <div className="text-xs text-muted-foreground mb-2">
-                        Planet Class
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                          <span>Precision:</span>
-                          <span className="font-semibold">
-                            {trainedModel.metrics.precision_planet.toFixed(4)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Recall:</span>
-                          <span className="font-semibold">
-                            {trainedModel.metrics.recall_planet.toFixed(4)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>F1:</span>
-                          <span className="font-semibold">
-                            {trainedModel.metrics.f1_planet.toFixed(4)}
-                          </span>
-                        </div>
-                      </div>
+                  <div className="bg-background rounded-lg p-4 mt-3">
+                    <div className="text-sm text-muted-foreground mb-3">
+                      Planet Class Metrics
                     </div>
-                    <div className="bg-background rounded-lg p-3">
-                      <div className="text-xs text-muted-foreground mb-2">
-                        Non-Planet Class
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Precision:</span>
+                        <span className="font-semibold">
+                          {trainedModel.metrics.precision_planet.toFixed(4)}
+                        </span>
                       </div>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                          <span>Precision:</span>
-                          <span className="font-semibold">
-                            {trainedModel.metrics.precision_non_planet.toFixed(
-                              4
-                            )}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Recall:</span>
-                          <span className="font-semibold">
-                            {trainedModel.metrics.recall_non_planet.toFixed(4)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>F1:</span>
-                          <span className="font-semibold">
-                            {trainedModel.metrics.f1_non_planet.toFixed(4)}
-                          </span>
-                        </div>
+                      <div className="flex justify-between">
+                        <span>Recall:</span>
+                        <span className="font-semibold">
+                          {trainedModel.metrics.recall_planet.toFixed(4)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>F1 Score:</span>
+                        <span className="font-semibold">
+                          {trainedModel.metrics.f1_planet.toFixed(4)}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -859,7 +811,9 @@ const CreateModel = () => {
                   </Button>
                   <Button
                     onClick={() =>
-                      navigate(`/fine-tuning/classify/${trainedModel.id}`)
+                      navigate(`/fine-tuning/classify/${trainedModel.id}`, {
+                        state: { modelData: trainedModel },
+                      })
                     }
                     className="flex-1">
                     Use Model Now

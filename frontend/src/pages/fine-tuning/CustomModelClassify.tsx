@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Upload,
   FileText,
@@ -51,9 +51,16 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
+// Helper function to format model name
+const formatModelName = (name: string): string => {
+  // Remove "lightgbm_" prefix if present
+  return name.replace(/^lightgbm_/, "");
+};
+
 const CustomModelClassify = () => {
   const { modelId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   const [file, setFile] = useState<File | null>(null);
@@ -62,7 +69,7 @@ const CustomModelClassify = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [modelInfo, setModelInfo] = useState<any>(null);
-  const [loadingModelInfo, setLoadingModelInfo] = useState(true);
+  const [loadingModelInfo, setLoadingModelInfo] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [filterPrediction, setFilterPrediction] = useState<string>("all");
@@ -75,56 +82,23 @@ const CustomModelClassify = () => {
   const [previewItemsPerPage] = useState(10);
 
   useEffect(() => {
-    fetchModelInfo();
-  }, [modelId]);
+    // Get model data from navigation state
+    const stateData = location.state as any;
 
-  const fetchModelInfo = async () => {
-    try {
-      setLoadingModelInfo(true);
-
-      // TODO: Replace with actual API call
-      // const response = await fetch(`http://localhost:8000/api/v1/fine-tuning/models/${modelId}`, {
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`
-      //   }
-      // });
-      // const data = await response.json();
-      // setModelInfo(data.model);
-
-      // Mock data
-      setTimeout(() => {
-        setModelInfo({
-          id: modelId,
-          name: "Kepler Extended Model",
-          description: "Model trained with additional Kepler mission data",
-          created_at: "2025-10-01T10:30:00Z",
-          metrics: {
-            roc_auc: 0.9821,
-            prc_auc: 0.9654,
-            accuracy: 0.9245,
-            f1_planet: 0.8956,
-          },
-          hyperparameters: {
-            n_estimators: 1500,
-            learning_rate: 0.003,
-            max_depth: 10,
-            num_leaves: 256,
-          },
-          training_samples: 15420,
-          status: "active",
-        });
-        setLoadingModelInfo(false);
-      }, 500);
-    } catch (error) {
-      console.error("Error fetching model info:", error);
+    if (stateData?.modelData) {
+      // Use the model data passed via navigation
+      setModelInfo(stateData.modelData);
+      setLoadingModelInfo(false);
+    } else {
+      // If no data passed, redirect back to model list
       toast({
-        title: "Error loading model",
-        description: "Could not load model information.",
+        title: "No model data",
+        description: "Please select a model from the list.",
         variant: "destructive",
       });
-      setLoadingModelInfo(false);
+      navigate("/fine-tuning");
     }
-  };
+  }, [modelId, location.state, navigate, toast]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -575,7 +549,7 @@ const CustomModelClassify = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container pt-24 pb-16 max-w-5xl mx-auto">
+      <main className="container pt-24 pb-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -587,13 +561,13 @@ const CustomModelClassify = () => {
             <ArrowLeft className="h-4 w-4" />
             Back to Models
           </Button>
-          <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-            <Sparkles className="h-8 w-8 text-primary" />
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2 flex items-center gap-3">
+            <Sparkles className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
             {loadingModelInfo
               ? "Loading..."
               : modelInfo?.name || "Custom Model"}
           </h1>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-lg sm:text-xl text-muted-foreground">
             {loadingModelInfo
               ? "Loading model information..."
               : modelInfo?.description ||
@@ -614,18 +588,13 @@ const CustomModelClassify = () => {
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <CheckCircle2 className="h-6 w-6 text-primary" />
                     </div>
-                    Custom Model Information
+                    {modelInfo.name}
                   </CardTitle>
-                  <CardDescription className="text-base">
-                    Trained with {modelInfo.training_samples.toLocaleString()}{" "}
-                    samples on{" "}
-                    {new Date(modelInfo.created_at).toLocaleDateString()}
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                     <div className="text-center p-4 bg-background/50 rounded-lg">
-                      <div className="text-3xl font-bold text-primary mb-1">
+                      <div className="text-2xl sm:text-3xl font-bold text-primary mb-1">
                         {modelInfo.metrics.roc_auc.toFixed(3)}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -633,7 +602,7 @@ const CustomModelClassify = () => {
                       </div>
                     </div>
                     <div className="text-center p-4 bg-background/50 rounded-lg">
-                      <div className="text-3xl font-bold text-blue-600 mb-1">
+                      <div className="text-2xl sm:text-3xl font-bold text-blue-600 mb-1">
                         {modelInfo.metrics.prc_auc.toFixed(3)}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -641,7 +610,7 @@ const CustomModelClassify = () => {
                       </div>
                     </div>
                     <div className="text-center p-4 bg-background/50 rounded-lg">
-                      <div className="text-3xl font-bold text-green-600 mb-1">
+                      <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">
                         {(modelInfo.metrics.accuracy * 100).toFixed(1)}%
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -649,7 +618,7 @@ const CustomModelClassify = () => {
                       </div>
                     </div>
                     <div className="text-center p-4 bg-background/50 rounded-lg">
-                      <div className="text-3xl font-bold text-purple-600 mb-1">
+                      <div className="text-2xl sm:text-3xl font-bold text-purple-600 mb-1">
                         {modelInfo.metrics.f1_planet.toFixed(3)}
                       </div>
                       <div className="text-sm text-muted-foreground">

@@ -1,15 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import {
-  Plus,
-  Sparkles,
-  Calendar,
-  TrendingUp,
-  FileText,
-  Trash2,
-  Eye,
-} from "lucide-react";
+import { Plus, Sparkles, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,18 +11,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+
+// Helper function to format model name
+const formatModelName = (name: string): string => {
+  // Remove "lightgbm_" prefix if present
+  return name.replace(/^lightgbm_/, "");
+};
 
 interface CustomModel {
   id: string;
@@ -66,81 +53,62 @@ const FineTuningList = () => {
   const fetchModels = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      // const response = await fetch("http://localhost:8000/api/v1/fine-tuning/models", {
-      //   headers: {
-      //     'Authorization': `Bearer ${token}` // Add authentication
-      //   }
-      // });
-      // const data = await response.json();
-      // setModels(data.models);
 
-      // Mock data for now
-      setTimeout(() => {
-        setModels([
-          {
-            id: "model-001",
-            name: "Kepler Extended Model",
-            description: "Model trained with additional Kepler mission data",
-            created_at: "2025-10-01T10:30:00Z",
+      const response = await fetch("http://localhost:8000/api/v1/models", {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch models: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Map API response to component structure
+      const mappedModels =
+        data.models?.map((model: any) => {
+          const metadata = model.metadata || {};
+          const params = metadata.params || {};
+          const metrics = metadata.metrics || {};
+
+          // Extract date from created_at format "20251005_131552"
+          const createdAtStr = metadata.created_at || "";
+          let formattedDate = new Date().toISOString();
+          if (createdAtStr && createdAtStr.length >= 8) {
+            const year = createdAtStr.substring(0, 4);
+            const month = createdAtStr.substring(4, 6);
+            const day = createdAtStr.substring(6, 8);
+            formattedDate = `${year}-${month}-${day}T00:00:00Z`;
+          }
+
+          return {
+            id: model.model_name || `model-${Date.now()}`,
+            name: formatModelName(
+              metadata.model_name || model.model_name || "Custom Model"
+            ),
+            description: "Custom trained exoplanet detection model",
+            created_at: formattedDate,
             metrics: {
-              roc_auc: 0.9821,
-              prc_auc: 0.9654,
-              accuracy: 0.9245,
-              f1_planet: 0.8956,
+              roc_auc: metrics.auc_roc || 0,
+              prc_auc: metrics.auc_prc || 0,
+              accuracy: metrics.accuracy || 0,
+              f1_planet: metrics.f1_score_planet || 0,
             },
             hyperparameters: {
-              n_estimators: 1500,
-              learning_rate: 0.003,
-              max_depth: 10,
-              num_leaves: 256,
+              n_estimators: params.n_estimators || 0,
+              learning_rate: params.learning_rate || 0,
+              max_depth: params.max_depth || 0,
+              num_leaves: params.num_leaves || 0,
+              feature_fraction: params.feature_fraction || 0,
+              bagging_fraction: params.bagging_fraction || 0,
             },
-            training_samples: 15420,
-            status: "active",
-          },
-          {
-            id: "model-002",
-            name: "TESS High Precision",
-            description: "Optimized for TESS mission candidates",
-            created_at: "2025-09-28T14:20:00Z",
-            metrics: {
-              roc_auc: 0.9756,
-              prc_auc: 0.9521,
-              accuracy: 0.918,
-              f1_planet: 0.8823,
-            },
-            hyperparameters: {
-              n_estimators: 1200,
-              learning_rate: 0.005,
-              max_depth: 8,
-              num_leaves: 256,
-            },
-            training_samples: 8934,
-            status: "active",
-          },
-          {
-            id: "model-003",
-            name: "Multi-Mission Hybrid",
-            description: "Combined training from Kepler, K2 and TESS",
-            created_at: "2025-09-25T09:15:00Z",
-            metrics: {
-              roc_auc: 0.9689,
-              prc_auc: 0.9412,
-              accuracy: 0.9012,
-              f1_planet: 0.8745,
-            },
-            hyperparameters: {
-              n_estimators: 1000,
-              learning_rate: 0.008,
-              max_depth: 12,
-              num_leaves: 200,
-            },
-            training_samples: 22150,
-            status: "active",
-          },
-        ]);
-        setLoading(false);
-      }, 800);
+            training_samples: 0, // Not provided in API response
+            status: "active" as const,
+          };
+        }) || [];
+
+      setModels(mappedModels);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching models:", error);
       toast({
@@ -149,31 +117,6 @@ const FineTuningList = () => {
         variant: "destructive",
       });
       setLoading(false);
-    }
-  };
-
-  const handleDeleteModel = async (modelId: string) => {
-    try {
-      // TODO: Replace with actual API call
-      // await fetch(`http://localhost:8000/api/v1/fine-tuning/models/${modelId}`, {
-      //   method: "DELETE",
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`
-      //   }
-      // });
-
-      setModels(models.filter((m) => m.id !== modelId));
-      toast({
-        title: "Model deleted",
-        description: "Your custom model was successfully deleted.",
-      });
-    } catch (error) {
-      console.error("Error deleting model:", error);
-      toast({
-        title: "Error",
-        description: "Could not delete the model.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -187,18 +130,18 @@ const FineTuningList = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container pt-24 pb-16 max-w-7xl mx-auto">
+      <main className="container pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-                <Sparkles className="h-8 w-8 text-primary" />
+              <h1 className="text-3xl sm:text-4xl font-bold mb-2 flex items-center gap-3">
+                <Sparkles className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
                 Fine Tuning
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-lg sm:text-xl text-muted-foreground">
                 Create and manage your custom exoplanet detection models
               </p>
             </div>
@@ -213,7 +156,7 @@ const FineTuningList = () => {
         </motion.div>
 
         {loading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="animate-pulse">
                 <CardHeader>
@@ -260,7 +203,7 @@ const FineTuningList = () => {
             </Card>
           </motion.div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {models.map((model, index) => (
               <motion.div
                 key={model.id}
@@ -274,9 +217,6 @@ const FineTuningList = () => {
                         <CardTitle className="text-lg mb-1 truncate">
                           {model.name}
                         </CardTitle>
-                        <CardDescription className="text-sm line-clamp-2">
-                          {model.description}
-                        </CardDescription>
                       </div>
                       <Badge
                         variant={
@@ -323,27 +263,6 @@ const FineTuningList = () => {
                           </div>
                         </div>
                       </div>
-
-                      {/* Info */}
-                      <div className="space-y-2 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 flex-shrink-0" />
-                          <span>{formatDate(model.created_at)}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 flex-shrink-0" />
-                          <span>
-                            {model.training_samples.toLocaleString()} samples
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">
-                            {model.hyperparameters.n_estimators} trees, LR:{" "}
-                            {model.hyperparameters.learning_rate}
-                          </span>
-                        </div>
-                      </div>
                     </div>
 
                     {/* Actions */}
@@ -351,38 +270,15 @@ const FineTuningList = () => {
                       <Button
                         variant="default"
                         size="sm"
-                        className="flex-1 gap-2"
+                        className="w-full gap-2"
                         onClick={() =>
-                          navigate(`/fine-tuning/classify/${model.id}`)
+                          navigate(`/fine-tuning/classify/${model.id}`, {
+                            state: { modelData: model },
+                          })
                         }>
                         <Eye className="h-4 w-4" />
                         Use Model
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Model?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone. This will
-                              permanently delete the model "{model.name}" and
-                              all associated data.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteModel(model.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
                     </div>
                   </CardContent>
                 </Card>
