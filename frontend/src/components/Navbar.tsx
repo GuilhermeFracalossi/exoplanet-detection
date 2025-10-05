@@ -20,7 +20,6 @@ export const Navbar = () => {
     { href: "/", label: "Home" },
     { href: "/classificacao", label: "Classification" },
     { href: "/fine-tuning", label: "Fine Tuning" },
-    { href: "/planos", label: "Plans" },
   ];
 
   return (

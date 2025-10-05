@@ -119,7 +119,7 @@ const Classificacao = () => {
         setModelInfo(null);
       }
     } catch (error) {
-      console.warn("Erro ao buscar informações do modelo:", error);
+      console.warn("Error fetching model information:", error);
       setModelInfo(null);
     } finally {
       setLoadingModelInfo(false);
@@ -129,9 +129,23 @@ const Classificacao = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      setFile(selectedFile);
 
       try {
+        // Validate CSV columns first
+        const isValid = await validateCSVColumns(selectedFile);
+
+        if (!isValid) {
+          // Clear the file input if validation fails
+          e.target.value = "";
+          setFile(null);
+          setCsvData([]);
+          setShowDataPreview(false);
+          return;
+        }
+
+        // If valid, set file and parse CSV
+        setFile(selectedFile);
+
         // Parse CSV and store data
         const data = await parseCSV(selectedFile);
         setCsvData(data);
@@ -139,10 +153,15 @@ const Classificacao = () => {
         setPreviewPage(1);
 
         toast({
-          title: "File loaded",
-          description: `${data.length} records found. Review the data before classifying.`,
+          title: "File loaded successfully",
+          description: `${data.length} records found and validated. Review the data before classifying.`,
         });
       } catch (error) {
+        console.error("Error processing file:", error);
+        e.target.value = "";
+        setFile(null);
+        setCsvData([]);
+        setShowDataPreview(false);
         toast({
           title: "Error reading file",
           description: "Could not process the CSV file.",
@@ -178,7 +197,7 @@ const Classificacao = () => {
       };
 
       reader.onerror = () => {
-        reject(new Error("Erro ao ler o arquivo CSV"));
+        reject(new Error("Error reading CSV file"));
       };
 
       reader.readAsText(file);
@@ -186,42 +205,83 @@ const Classificacao = () => {
   };
 
   const validateCSVColumns = async (file: File): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const reader = new FileReader();
 
       reader.onload = (e) => {
-        const text = e.target?.result as string;
-        const firstLine = text.split("\n")[0];
-        const columns = firstLine
-          .split(",")
-          .map((col) => col.trim().replace(/['"]/g, ""));
+        try {
+          const text = e.target?.result as string;
 
-        const requiredColumns = [
-          "transit_id",
-          "pl_period",
-          "pl_transit_duration",
-          "pl_radius",
-          "st_eff_temp",
-          "st_radius",
-        ];
+          if (!text || text.trim().length === 0) {
+            toast({
+              title: "Invalid CSV",
+              description: "The CSV file is empty.",
+              variant: "destructive",
+            });
+            resolve(false);
+            return;
+          }
 
-        const missingColumns = requiredColumns.filter(
-          (col) => !columns.includes(col)
-        );
+          const lines = text
+            .split("\n")
+            .filter((line) => line.trim().length > 0);
 
-        if (missingColumns.length > 0) {
+          if (lines.length === 0) {
+            toast({
+              title: "Invalid CSV",
+              description: "No data found in CSV file.",
+              variant: "destructive",
+            });
+            resolve(false);
+            return;
+          }
+
+          const firstLine = lines[0];
+          const columns = firstLine
+            .split(",")
+            .map((col) => col.trim().replace(/['"]/g, "").toLowerCase());
+
+          console.log("CSV Columns found:", columns);
+
+          const requiredColumns = [
+            "transit_id",
+            "pl_period",
+            "pl_transit_duration",
+            "pl_radius",
+            "st_eff_temp",
+            "st_radius",
+          ];
+
+          const missingColumns = requiredColumns.filter(
+            (col) => !columns.includes(col.toLowerCase())
+          );
+
+          console.log("Missing columns:", missingColumns);
+
+          if (missingColumns.length > 0) {
+            toast({
+              title: "Validation Error",
+              description: `Missing required columns: ${missingColumns.join(
+                ", "
+              )}`,
+              variant: "destructive",
+            });
+            resolve(false);
+          } else {
+            toast({
+              title: "CSV Validated ✓",
+              description: "All required columns were found!",
+            });
+            resolve(true);
+          }
+        } catch (error) {
+          console.error("Error validating CSV:", error);
           toast({
             title: "Validation Error",
-            description: `Missing columns: ${missingColumns.join(", ")}`,
+            description: "Could not parse the CSV file.",
             variant: "destructive",
           });
           resolve(false);
-        } else {
-          toast({
-            title: "Validation OK",
-            description: "All required columns were found!",
-          });
-          resolve(true);
         }
       };
 
@@ -231,7 +291,7 @@ const Classificacao = () => {
           description: "Could not read the CSV file.",
           variant: "destructive",
         });
-        reject(false);
+        resolve(false);
       };
 
       reader.readAsText(file);
@@ -254,7 +314,7 @@ const Classificacao = () => {
 
     if (!response.ok) {
       const errorData = await response.text();
-      throw new Error(`Erro na API: ${response.status} - ${errorData}`);
+      throw new Error(`API Error: ${response.status} - ${errorData}`);
     }
 
     return await response.json();
@@ -273,15 +333,8 @@ const Classificacao = () => {
     setIsProcessing(true);
 
     try {
-      // Validate CSV columns
-      const isValid = await validateCSVColumns(file);
-
-      if (!isValid) {
-        setIsProcessing(false);
-        return;
-      }
-
-      // Enviar CSV para a API
+      // File is already validated during upload - proceed directly to API
+      // Send CSV to API
       const apiData = await sendCSVToAPI(file);
 
       // Ler dados completos do CSV
@@ -609,13 +662,15 @@ const Classificacao = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container pt-24 pb-16 max-w-5xl mx-auto">
+      <main className="container pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Exoplanet Classification</h1>
-          <p className="text-xl text-muted-foreground">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+            Exoplanet Classification
+          </h1>
+          <p className="text-lg sm:text-xl text-muted-foreground">
             Upload your CSV and classify candidates using our Specttra model
           </p>
         </motion.div>
@@ -641,7 +696,7 @@ const Classificacao = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                     <div className="text-center p-4 bg-background/50 rounded-lg">
                       <div className="text-3xl font-bold text-primary mb-1">
                         {modelInfo.metrics?.roc_auc?.toFixed(2) || "N/A"}
@@ -1359,7 +1414,7 @@ const Classificacao = () => {
                                     {row.id}
                                   </CardTitle>
                                   <CardDescription className="mt-1">
-                                    Candidato a exoplaneta
+                                    Exoplanet candidate
                                   </CardDescription>
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
