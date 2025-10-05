@@ -76,7 +76,6 @@ const CustomModelClassify = () => {
   const [pageInput, setPageInput] = useState<string>("1");
 
   const [csvData, setCsvData] = useState<any[]>([]);
-  const [showDataPreview, setShowDataPreview] = useState(false);
   const [previewPage, setPreviewPage] = useState(1);
   const [previewItemsPerPage] = useState(10);
 
@@ -112,7 +111,6 @@ const CustomModelClassify = () => {
           e.target.value = "";
           setFile(null);
           setCsvData([]);
-          setShowDataPreview(false);
           return;
         }
 
@@ -120,7 +118,6 @@ const CustomModelClassify = () => {
         setFile(selectedFile);
         const data = await parseCSV(selectedFile);
         setCsvData(data);
-        setShowDataPreview(true);
         setPreviewPage(1);
 
         toast({
@@ -138,7 +135,6 @@ const CustomModelClassify = () => {
         e.target.value = "";
         setFile(null);
         setCsvData([]);
-        setShowDataPreview(false);
       }
     }
   };
@@ -722,42 +718,7 @@ const CustomModelClassify = () => {
               </CardContent>
             </Card>
 
-            {/* Data Preview - Simplified version */}
-            {showDataPreview && csvData.length > 0 && !results && (
-              <Card className="border-blue-200 dark:border-blue-800">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-blue-500" />
-                        Data Preview
-                      </CardTitle>
-                      <CardDescription>
-                        {csvData.length} records loaded
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setShowDataPreview(false);
-                        setFile(null);
-                        setCsvData([]);
-                      }}>
-                      <X className="h-4 w-4 mr-2" />
-                      Change File
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Ready to classify with your custom model
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {file && !isProcessing && !results && showDataPreview && (
+            {file && !isProcessing && !results && (
               <Button onClick={handleClassify} size="lg" className="w-full">
                 Classify with Custom Model
               </Button>
