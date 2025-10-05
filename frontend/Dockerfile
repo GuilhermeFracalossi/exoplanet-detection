@@ -9,7 +9,7 @@ RUN bun install --frozen-lockfile
 
 # Copy the rest of the source code and build the project
 COPY . .
-RUN bun run build
+RUN bunx vite build --debug
 
 # Stage 2: Serve the static assets with Nginx
 FROM nginx:stable-alpine
