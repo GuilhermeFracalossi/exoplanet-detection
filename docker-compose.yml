@@ -11,12 +11,12 @@ services:
     networks:
       - app-network
 
-  # frontend:
-  #   image: us-central1-docker.pkg.dev/specttra/specttra-deploy/specttra-app:latest
-  #   container_name: frontend_service
-  #   restart: unless-stopped
-  #   networks:
-  #     - app-network
+  frontend:
+    image: us-central1-docker.pkg.dev/specttra/specttra-deploy/specttra-app:latest
+    container_name: frontend_service
+    restart: unless-stopped
+    networks:
+      - app-network
 
   nginx-proxy:
     image: nginx:stable-alpine
