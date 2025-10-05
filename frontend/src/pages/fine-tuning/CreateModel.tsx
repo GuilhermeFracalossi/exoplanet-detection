@@ -10,6 +10,7 @@ import {
   AlertCircle,
   TrendingUp,
   Info,
+  Sliders,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +23,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 
 // Helper function to format model name
@@ -48,7 +50,6 @@ const CreateModel = () => {
     "upload" | "config" | "training" | "complete"
   >("upload");
   const [file, setFile] = useState<File | null>(null);
-  const [trainingProgress, setTrainingProgress] = useState(0);
   const [trainingStatus, setTrainingStatus] = useState("");
 
   const [hyperparams, setHyperparams] = useState({
@@ -193,8 +194,7 @@ const CreateModel = () => {
     }
 
     setStep("training");
-    setTrainingProgress(0);
-    setTrainingStatus("Preparing data...");
+    setTrainingStatus("Preparing data and training model...");
 
     try {
       // Prepare FormData with file and hyperparameters
@@ -222,9 +222,7 @@ const CreateModel = () => {
         hyperparams.min_child_samples.toString()
       );
 
-      // Show progress feedback
-      setTrainingStatus("Uploading data and starting training...");
-      setTrainingProgress(10);
+      setTrainingStatus("Training model with your data...");
 
       const response = await fetch("http://localhost:8000/api/v1/train", {
         method: "POST",
@@ -240,9 +238,7 @@ const CreateModel = () => {
 
       console.log("Training response:", data); // Debug log
 
-      // Update progress
       setTrainingStatus("Training completed successfully!");
-      setTrainingProgress(100);
 
       // Extract model name from path
       // Path format: ".../models/model_20251005_131552/lightgbm_model.pkl"
@@ -406,7 +402,7 @@ const CreateModel = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
+                  <Sliders className="h-5 w-5" />
                   Hyperparameters Configuration
                 </CardTitle>
                 <CardDescription>
@@ -418,256 +414,370 @@ const CreateModel = () => {
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full mb-4">
-                      <Settings className="h-4 w-4 mr-2" />
+                      <Sliders className="h-4 w-4 mr-2" />
                       Edit Hyperparameters
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[600px] overflow-y-auto">
+                  <DialogContent className="max-w-3xl max-h-[700px] overflow-y-auto">
                     <DialogHeader>
-                      <DialogTitle>Configure Hyperparameters</DialogTitle>
+                      <DialogTitle className="flex items-center gap-2">
+                        <Sliders className="h-5 w-5" />
+                        Configure Hyperparameters
+                      </DialogTitle>
                       <DialogDescription>
-                        Adjust the LightGBM parameters for training your custom
-                        model. These will override the base Specttra model
-                        settings.
+                        Fine-tune LightGBM parameters for your custom model.
+                        Adjust sliders and see real-time updates.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-6 py-4">
-                      {/* n_estimators */}
-                      <div>
-                        <Label>Number of Trees (n_estimators)</Label>
-                        <Input
-                          type="number"
-                          value={hyperparams.n_estimators}
-                          onChange={(e) =>
-                            handleUpdateHyperparam(
-                              "n_estimators",
-                              parseInt(e.target.value)
-                            )
-                          }
-                          min={100}
-                          max={5000}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Default: 1200. More trees = better performance but
-                          slower training
-                        </p>
-                      </div>
+                    <Tabs defaultValue="basic" className="w-full">
+                      <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="basic">Basic</TabsTrigger>
+                        <TabsTrigger value="regularization">
+                          Regularization
+                        </TabsTrigger>
+                        <TabsTrigger value="advanced">Advanced</TabsTrigger>
+                      </TabsList>
 
-                      {/* learning_rate */}
-                      <div>
-                        <Label>Learning Rate</Label>
-                        <Input
-                          type="number"
-                          step="0.001"
-                          value={hyperparams.learning_rate}
-                          onChange={(e) =>
-                            handleUpdateHyperparam(
-                              "learning_rate",
-                              parseFloat(e.target.value)
-                            )
-                          }
-                          min={0.001}
-                          max={0.3}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Default: 0.005. Lower = more conservative learning
-                        </p>
-                      </div>
+                      {/* Basic Parameters */}
+                      <TabsContent value="basic" className="space-y-6 py-4">
+                        {/* n_estimators */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-semibold">
+                              Number of Trees
+                            </Label>
+                            <Badge variant="secondary">
+                              {hyperparams.n_estimators}
+                            </Badge>
+                          </div>
+                          <Slider
+                            value={[hyperparams.n_estimators]}
+                            onValueChange={(value) =>
+                              handleUpdateHyperparam("n_estimators", value[0])
+                            }
+                            min={100}
+                            max={3000}
+                            step={100}
+                            className="w-full"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            More trees improve performance but increase training
+                            time. Default: 1600
+                          </p>
+                        </div>
 
-                      {/* max_depth */}
-                      <div>
-                        <Label>Maximum Depth</Label>
-                        <Input
-                          type="number"
-                          value={hyperparams.max_depth}
-                          onChange={(e) =>
-                            handleUpdateHyperparam(
-                              "max_depth",
-                              parseInt(e.target.value)
-                            )
-                          }
-                          min={3}
-                          max={20}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Default: 8. Controls tree complexity
-                        </p>
-                      </div>
+                        {/* learning_rate */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-semibold">
+                              Learning Rate
+                            </Label>
+                            <Badge variant="secondary">
+                              {hyperparams.learning_rate.toFixed(4)}
+                            </Badge>
+                          </div>
+                          <Slider
+                            value={[hyperparams.learning_rate * 1000]}
+                            onValueChange={(value) =>
+                              handleUpdateHyperparam(
+                                "learning_rate",
+                                value[0] / 1000
+                              )
+                            }
+                            min={1}
+                            max={50}
+                            step={0.1}
+                            className="w-full"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Controls how much each tree contributes. Lower =
+                            more conservative. Default: 0.0028
+                          </p>
+                        </div>
 
-                      {/* num_leaves */}
-                      <div>
-                        <Label>Number of Leaves</Label>
-                        <Input
-                          type="number"
-                          value={hyperparams.num_leaves}
-                          onChange={(e) =>
-                            handleUpdateHyperparam(
-                              "num_leaves",
-                              parseInt(e.target.value)
-                            )
-                          }
-                          min={15}
-                          max={512}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Default: 256. Maximum leaves per tree
-                        </p>
-                      </div>
+                        {/* max_depth */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-semibold">
+                              Maximum Depth
+                            </Label>
+                            <Badge variant="secondary">
+                              {hyperparams.max_depth}
+                            </Badge>
+                          </div>
+                          <Slider
+                            value={[hyperparams.max_depth]}
+                            onValueChange={(value) =>
+                              handleUpdateHyperparam("max_depth", value[0])
+                            }
+                            min={3}
+                            max={20}
+                            step={1}
+                            className="w-full"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Maximum tree depth. Higher values can lead to
+                            overfitting. Default: 10
+                          </p>
+                        </div>
 
-                      {/* lambda_l1 */}
-                      <div>
-                        <Label>L1 Regularization (lambda_l1)</Label>
-                        <Input
-                          type="number"
-                          step="0.0000001"
-                          value={hyperparams.lambda_l1}
-                          onChange={(e) =>
-                            handleUpdateHyperparam(
-                              "lambda_l1",
-                              parseFloat(e.target.value)
-                            )
-                          }
-                          min={0}
-                          max={1}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Default: 0.0000001. Prevents overfitting (L1)
-                        </p>
-                      </div>
+                        {/* num_leaves */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-semibold">
+                              Number of Leaves
+                            </Label>
+                            <Badge variant="secondary">
+                              {hyperparams.num_leaves}
+                            </Badge>
+                          </div>
+                          <Slider
+                            value={[hyperparams.num_leaves]}
+                            onValueChange={(value) =>
+                              handleUpdateHyperparam("num_leaves", value[0])
+                            }
+                            min={15}
+                            max={512}
+                            step={5}
+                            className="w-full"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Maximum number of leaves per tree. Default: 350
+                          </p>
+                        </div>
+                      </TabsContent>
 
-                      {/* lambda_l2 */}
-                      <div>
-                        <Label>L2 Regularization (lambda_l2)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={hyperparams.lambda_l2}
-                          onChange={(e) =>
-                            handleUpdateHyperparam(
-                              "lambda_l2",
-                              parseFloat(e.target.value)
-                            )
-                          }
-                          min={0}
-                          max={1}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Default: 0.15. Prevents overfitting (L2)
-                        </p>
-                      </div>
+                      {/* Regularization Parameters */}
+                      <TabsContent
+                        value="regularization"
+                        className="space-y-6 py-4">
+                        {/* lambda_l1 */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-semibold">
+                              L1 Regularization (λ₁)
+                            </Label>
+                            <Badge variant="secondary">
+                              {hyperparams.lambda_l1.toExponential(2)}
+                            </Badge>
+                          </div>
+                          <Slider
+                            value={[
+                              Math.log10(hyperparams.lambda_l1 + 1e-10) + 10,
+                            ]}
+                            onValueChange={(value) =>
+                              handleUpdateHyperparam(
+                                "lambda_l1",
+                                Math.pow(10, value[0] - 10)
+                              )
+                            }
+                            min={0}
+                            max={10}
+                            step={0.1}
+                            className="w-full"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            L1 regularization to prevent overfitting. Very small
+                            values recommended. Default: 1e-8
+                          </p>
+                        </div>
 
-                      {/* feature_fraction */}
-                      <div>
-                        <Label>Feature Fraction</Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          value={hyperparams.feature_fraction}
-                          onChange={(e) =>
-                            handleUpdateHyperparam(
-                              "feature_fraction",
-                              parseFloat(e.target.value)
-                            )
-                          }
-                          min={0.1}
-                          max={1.0}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Default: 0.8. Fraction of features used per tree
-                        </p>
-                      </div>
+                        {/* lambda_l2 */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-semibold">
+                              L2 Regularization (λ₂)
+                            </Label>
+                            <Badge variant="secondary">
+                              {hyperparams.lambda_l2.toFixed(3)}
+                            </Badge>
+                          </div>
+                          <Slider
+                            value={[hyperparams.lambda_l2 * 100]}
+                            onValueChange={(value) =>
+                              handleUpdateHyperparam(
+                                "lambda_l2",
+                                value[0] / 100
+                              )
+                            }
+                            min={0}
+                            max={100}
+                            step={1}
+                            className="w-full"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            L2 regularization to prevent overfitting. Default:
+                            0.2
+                          </p>
+                        </div>
 
-                      {/* bagging_fraction */}
-                      <div>
-                        <Label>Bagging Fraction</Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          value={hyperparams.bagging_fraction}
-                          onChange={(e) =>
-                            handleUpdateHyperparam(
-                              "bagging_fraction",
-                              parseFloat(e.target.value)
-                            )
-                          }
-                          min={0.1}
-                          max={1.0}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Default: 0.6. Fraction of data used per iteration
-                        </p>
-                      </div>
+                        {/* min_child_samples */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-semibold">
+                              Minimum Child Samples
+                            </Label>
+                            <Badge variant="secondary">
+                              {hyperparams.min_child_samples}
+                            </Badge>
+                          </div>
+                          <Slider
+                            value={[hyperparams.min_child_samples]}
+                            onValueChange={(value) =>
+                              handleUpdateHyperparam(
+                                "min_child_samples",
+                                value[0]
+                              )
+                            }
+                            min={5}
+                            max={100}
+                            step={1}
+                            className="w-full"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Minimum samples required in a leaf node. Higher
+                            prevents overfitting. Default: 16
+                          </p>
+                        </div>
+                      </TabsContent>
 
-                      {/* bagging_freq */}
-                      <div>
-                        <Label>Bagging Frequency</Label>
-                        <Input
-                          type="number"
-                          value={hyperparams.bagging_freq}
-                          onChange={(e) =>
-                            handleUpdateHyperparam(
-                              "bagging_freq",
-                              parseInt(e.target.value)
-                            )
-                          }
-                          min={0}
-                          max={20}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Default: 5. Frequency of bagging
-                        </p>
-                      </div>
+                      {/* Advanced Parameters */}
+                      <TabsContent value="advanced" className="space-y-6 py-4">
+                        {/* feature_fraction */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-semibold">
+                              Feature Fraction
+                            </Label>
+                            <Badge variant="secondary">
+                              {hyperparams.feature_fraction.toFixed(2)}
+                            </Badge>
+                          </div>
+                          <Slider
+                            value={[hyperparams.feature_fraction * 100]}
+                            onValueChange={(value) =>
+                              handleUpdateHyperparam(
+                                "feature_fraction",
+                                value[0] / 100
+                              )
+                            }
+                            min={10}
+                            max={100}
+                            step={1}
+                            className="w-full"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Fraction of features used per tree. Helps prevent
+                            overfitting. Default: 0.88
+                          </p>
+                        </div>
 
-                      {/* min_child_samples */}
-                      <div>
-                        <Label>Minimum Child Samples</Label>
-                        <Input
-                          type="number"
-                          value={hyperparams.min_child_samples}
-                          onChange={(e) =>
-                            handleUpdateHyperparam(
-                              "min_child_samples",
-                              parseInt(e.target.value)
-                            )
-                          }
-                          min={5}
-                          max={100}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Default: 20. Minimum samples in a leaf
-                        </p>
-                      </div>
-                    </div>
+                        {/* bagging_fraction */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-semibold">
+                              Bagging Fraction
+                            </Label>
+                            <Badge variant="secondary">
+                              {hyperparams.bagging_fraction.toFixed(2)}
+                            </Badge>
+                          </div>
+                          <Slider
+                            value={[hyperparams.bagging_fraction * 100]}
+                            onValueChange={(value) =>
+                              handleUpdateHyperparam(
+                                "bagging_fraction",
+                                value[0] / 100
+                              )
+                            }
+                            min={10}
+                            max={100}
+                            step={1}
+                            className="w-full"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Fraction of training data used per iteration.
+                            Default: 0.53
+                          </p>
+                        </div>
+
+                        {/* bagging_freq */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-semibold">
+                              Bagging Frequency
+                            </Label>
+                            <Badge variant="secondary">
+                              {hyperparams.bagging_freq}
+                            </Badge>
+                          </div>
+                          <Slider
+                            value={[hyperparams.bagging_freq]}
+                            onValueChange={(value) =>
+                              handleUpdateHyperparam("bagging_freq", value[0])
+                            }
+                            min={0}
+                            max={20}
+                            step={1}
+                            className="w-full"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Frequency for bagging. 0 means no bagging. Default:
+                            3
+                          </p>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
                   </DialogContent>
                 </Dialog>
 
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-muted/50 rounded-lg p-3">
-                    <div className="text-xs text-muted-foreground">Trees</div>
-                    <div className="text-lg font-bold">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                  <div className="bg-gradient-to-br from-violet-500/10 to-violet-600/5 border border-violet-500/20 rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Trees
+                    </div>
+                    <div className="text-xl font-bold text-violet-600 dark:text-violet-400">
                       {hyperparams.n_estimators}
                     </div>
                   </div>
-                  <div className="bg-muted/50 rounded-lg p-3">
-                    <div className="text-xs text-muted-foreground">
+                  <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground mb-1">
                       Learning Rate
                     </div>
-                    <div className="text-lg font-bold">
-                      {hyperparams.learning_rate}
+                    <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                      {hyperparams.learning_rate.toFixed(4)}
                     </div>
                   </div>
-                  <div className="bg-muted/50 rounded-lg p-3">
-                    <div className="text-xs text-muted-foreground">
+                  <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20 rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground mb-1">
                       Max Depth
                     </div>
-                    <div className="text-lg font-bold">
+                    <div className="text-xl font-bold text-green-600 dark:text-green-400">
                       {hyperparams.max_depth}
                     </div>
                   </div>
-                  <div className="bg-muted/50 rounded-lg p-3">
-                    <div className="text-xs text-muted-foreground">Leaves</div>
-                    <div className="text-lg font-bold">
+                  <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-500/20 rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Leaves
+                    </div>
+                    <div className="text-xl font-bold text-amber-600 dark:text-amber-400">
                       {hyperparams.num_leaves}
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-pink-500/10 to-pink-600/5 border border-pink-500/20 rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Feature Frac
+                    </div>
+                    <div className="text-xl font-bold text-pink-600 dark:text-pink-400">
+                      {(hyperparams.feature_fraction * 100).toFixed(0)}%
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-500/20 rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground mb-1">
+                      L2 Reg
+                    </div>
+                    <div className="text-xl font-bold text-cyan-600 dark:text-cyan-400">
+                      {hyperparams.lambda_l2.toFixed(2)}
                     </div>
                   </div>
                 </div>
@@ -704,20 +814,9 @@ const CreateModel = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {trainingStatus}
-                    </span>
-                    <span className="font-semibold">
-                      {trainingProgress.toFixed(0)}%
-                    </span>
-                  </div>
-                  <Progress value={trainingProgress} className="h-2" />
-                </div>
-
-                <div className="bg-muted/30 rounded-lg p-6 text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto mb-4" />
+                <div className="bg-muted/30 rounded-lg p-8 text-center">
+                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent mx-auto mb-4" />
+                  <p className="text-base font-medium mb-2">{trainingStatus}</p>
                   <p className="text-sm text-muted-foreground">
                     This may take a few minutes depending on your dataset
                     size...
