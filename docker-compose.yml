@@ -12,7 +12,7 @@ services:
       - app-network
 
   frontend:
-    image: us-central1-docker.pkg.dev/specttra/specttra-deploy/specttra-app:v2
+    image: us-central1-docker.pkg.dev/specttra/specttra-deploy/specttra-app:v3
     container_name: frontend_service
     restart: unless-stopped
     networks:
