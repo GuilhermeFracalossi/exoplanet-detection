@@ -200,13 +200,9 @@ const Classificacao = () => {
           "transit_id",
           "pl_period",
           "pl_transit_duration",
-          "pl_transit_depth",
           "pl_radius",
-          "pl_eq_temp",
-          "pl_insolation_flux",
           "st_eff_temp",
           "st_radius",
-          "st_logg",
         ];
 
         const missingColumns = requiredColumns.filter(
@@ -323,14 +319,9 @@ const Classificacao = () => {
             confidence: apiItem.confidence,
             pl_period: csvRow.pl_period || 0,
             pl_transit_duration: csvRow.pl_transit_duration || 0,
-            pl_transit_depth: csvRow.pl_transit_depth || 0, // em %
-            pl_transit_depth_ppm: (csvRow.pl_transit_depth || 0) * 10000, // converter % para ppm
             pl_radius: csvRow.pl_radius || 0,
-            pl_eq_temp: csvRow.pl_eq_temp || 0,
-            pl_insolation_flux: csvRow.pl_insolation_flux || 0,
             st_eff_temp: csvRow.st_eff_temp || 0,
             st_radius: csvRow.st_radius || 0,
-            st_logg: csvRow.st_logg || 0,
           };
         })
         .filter((row) => row !== null); // Remove linhas nulas
@@ -471,13 +462,9 @@ const Classificacao = () => {
         "Confidence (%)",
         "Orbital Period (days)",
         "Transit Duration (h)",
-        "Depth (ppm)",
         "Radius (R⊕)",
-        "Eq. Temp. (K)",
-        "Insolation Flux",
         "Stellar Temp. (K)",
         "Stellar Radius (R☉)",
-        "Stellar Log g",
       ];
 
       // Criar linhas do CSV com classificação dinâmica
@@ -489,13 +476,9 @@ const Classificacao = () => {
           (row.confidence * 100).toFixed(1),
           row.pl_period.toFixed(2),
           row.pl_transit_duration.toFixed(2),
-          row.pl_transit_depth_ppm.toFixed(0),
           row.pl_radius.toFixed(2),
-          row.pl_eq_temp.toFixed(0),
-          row.pl_insolation_flux.toFixed(2),
           row.st_eff_temp.toFixed(0),
           row.st_radius.toFixed(2),
-          row.st_logg.toFixed(2),
         ].join(",");
       });
 
@@ -542,37 +525,25 @@ const Classificacao = () => {
           transit_id: "KOI-001.01",
           pl_period: 10.85,
           pl_transit_duration: 2.8,
-          pl_transit_depth: 84.0,
           pl_radius: 1.05,
-          pl_eq_temp: 285.0,
-          pl_insolation_flux: 1.2,
           st_eff_temp: 5750.0,
           st_radius: 1.02,
-          st_logg: 4.43,
         },
         {
           transit_id: "TESS-123.02",
           pl_period: 3.14,
           pl_transit_duration: 1.5,
-          pl_transit_depth: 120.0,
           pl_radius: 2.1,
-          pl_eq_temp: 620.0,
-          pl_insolation_flux: 15.5,
           st_eff_temp: 6100.0,
           st_radius: 1.35,
-          st_logg: 4.21,
         },
         {
           transit_id: "K2-42.01",
           pl_period: 365.25,
           pl_transit_duration: 6.2,
-          pl_transit_depth: 45.0,
           pl_radius: 0.95,
-          pl_eq_temp: 255.0,
-          pl_insolation_flux: 1.0,
           st_eff_temp: 5778.0,
           st_radius: 1.0,
-          st_logg: 4.44,
         },
       ];
 
@@ -581,13 +552,9 @@ const Classificacao = () => {
         "transit_id",
         "pl_period",
         "pl_transit_duration",
-        "pl_transit_depth",
         "pl_radius",
-        "pl_eq_temp",
-        "pl_insolation_flux",
         "st_eff_temp",
         "st_radius",
-        "st_logg",
       ];
 
       const csvRows = [
@@ -701,7 +668,7 @@ const Classificacao = () => {
                     </div>
                     <div className="text-center p-4 bg-background/50 rounded-lg">
                       <div className="text-3xl font-bold text-primary mb-1">
-                        {modelInfo.metrics?.f1_score 
+                        {modelInfo.metrics?.f1_score
                           ? `${(modelInfo.metrics.f1_score * 100).toFixed(1)}%`
                           : "N/A"}
                       </div>
@@ -737,13 +704,55 @@ const Classificacao = () => {
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="file">CSV/Parquet File</Label>
-                  <Input
-                    id="file"
-                    type="file"
-                    accept=".csv,.parquet"
-                    onChange={handleFileChange}
-                    className="cursor-pointer"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="file"
+                      type="file"
+                      accept=".csv,.parquet"
+                      onChange={handleFileChange}
+                      className="cursor-pointer flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(
+                            "/src/pages/dados_exemplo.csv"
+                          );
+                          const csvText = await response.text();
+                          const blob = new Blob([csvText], {
+                            type: "text/csv",
+                          });
+                          const file = new File([blob], "dados_exemplo.csv", {
+                            type: "text/csv",
+                          });
+
+                          // Simular o evento de mudança de arquivo
+                          const dataTransfer = new DataTransfer();
+                          dataTransfer.items.add(file);
+                          const inputElement = document.getElementById(
+                            "file"
+                          ) as HTMLInputElement;
+                          if (inputElement) {
+                            inputElement.files = dataTransfer.files;
+                            handleFileChange({
+                              target: { files: dataTransfer.files },
+                            } as any);
+                          }
+                        } catch (error) {
+                          toast({
+                            title: "Error loading example",
+                            description: "Could not load the example CSV file.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      className="whitespace-nowrap">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Use Example
+                    </Button>
+                  </div>
                   {file && (
                     <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                       <FileText className="h-4 w-4" />
@@ -846,28 +855,6 @@ const Classificacao = () => {
                               </div>
                             </div>
 
-                            {/* Transit Depth */}
-                            <div className="border rounded-lg p-4 space-y-2">
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <Badge variant="outline" className="mb-2">
-                                    Transit Depth
-                                  </Badge>
-                                  <h4 className="font-semibold text-lg">
-                                    pl_transit_depth
-                                  </h4>
-                                </div>
-                                <Badge>Numeric</Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                Relative decrease in stellar brightness during
-                                transit (in parts per million).
-                              </p>
-                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Example: 84.0 (ppm) | Unit: parts per million
-                              </div>
-                            </div>
-
                             {/* Planet Radius */}
                             <div className="border rounded-lg p-4 space-y-2">
                               <div className="flex items-start justify-between">
@@ -887,51 +874,6 @@ const Classificacao = () => {
                               <div className="bg-muted/50 p-2 rounded text-xs font-mono">
                                 Example: 1.0 (Earth radii) | Earth = 1.0,
                                 Jupiter ≈ 11.2
-                              </div>
-                            </div>
-
-                            {/* Equilibrium Temperature */}
-                            <div className="border rounded-lg p-4 space-y-2">
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <Badge variant="outline" className="mb-2">
-                                    Equilibrium Temperature
-                                  </Badge>
-                                  <h4 className="font-semibold text-lg">
-                                    pl_eq_temp
-                                  </h4>
-                                </div>
-                                <Badge>Numeric</Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                Planet's equilibrium temperature in Kelvin,
-                                assuming zero albedo.
-                              </p>
-                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Example: 288 (K) | Earth ≈ 255K, habitable zone
-                                ≈ 200-300K
-                              </div>
-                            </div>
-
-                            {/* Insolation Flux */}
-                            <div className="border rounded-lg p-4 space-y-2">
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <Badge variant="outline" className="mb-2">
-                                    Insolation Flux
-                                  </Badge>
-                                  <h4 className="font-semibold text-lg">
-                                    pl_insolation_flux
-                                  </h4>
-                                </div>
-                                <Badge>Numeric</Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                Stellar flux incident on the planet in Earth
-                                flux units.
-                              </p>
-                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Example: 1.0 (Earth flux) | Earth = 1.0
                               </div>
                             </div>
 
@@ -978,28 +920,6 @@ const Classificacao = () => {
                                 Example: 1.0 (solar radii) | Sun = 1.0
                               </div>
                             </div>
-
-                            {/* Stellar Surface Gravity */}
-                            <div className="border rounded-lg p-4 space-y-2">
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <Badge variant="outline" className="mb-2">
-                                    Surface Gravity
-                                  </Badge>
-                                  <h4 className="font-semibold text-lg">
-                                    st_logg
-                                  </h4>
-                                </div>
-                                <Badge>Numeric</Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                Logarithm of the star's surface gravity
-                                (log₁₀[cm/s²]).
-                              </p>
-                              <div className="bg-muted/50 p-2 rounded text-xs font-mono">
-                                Example: 4.44 (log₁₀[cm/s²]) | Sun ≈ 4.44
-                              </div>
-                            </div>
                           </div>
 
                           <div className="flex gap-3 pt-4 border-t">
@@ -1042,13 +962,9 @@ const Classificacao = () => {
                       "transit_id",
                       "pl_period",
                       "pl_transit_duration",
-                      "pl_transit_depth",
                       "pl_radius",
-                      "pl_eq_temp",
-                      "pl_insolation_flux",
                       "st_eff_temp",
                       "st_radius",
-                      "st_logg",
                     ].map((col) => (
                       <Badge key={col} variant="secondary">
                         {col}
@@ -1370,9 +1286,9 @@ const Classificacao = () => {
                               <TableHead className="w-[120px]">ID</TableHead>
                               <TableHead>Period (d)</TableHead>
                               <TableHead>Duration (h)</TableHead>
-                              <TableHead>Depth (ppm)</TableHead>
                               <TableHead>Radius (R⊕)</TableHead>
-                              <TableHead>Temp. (K)</TableHead>
+                              <TableHead>St. Temp. (K)</TableHead>
+                              <TableHead>St. Radius (R☉)</TableHead>
                               <TableHead>Classification</TableHead>
                               <TableHead className="text-right">
                                 Conf.
@@ -1396,13 +1312,13 @@ const Classificacao = () => {
                                     {row.pl_transit_duration.toFixed(2)}
                                   </TableCell>
                                   <TableCell>
-                                    {row.pl_transit_depth_ppm.toFixed(0)}
-                                  </TableCell>
-                                  <TableCell>
                                     {row.pl_radius.toFixed(2)}
                                   </TableCell>
                                   <TableCell>
-                                    {row.pl_eq_temp.toFixed(0)}
+                                    {row.st_eff_temp.toFixed(0)}
+                                  </TableCell>
+                                  <TableCell>
+                                    {row.st_radius.toFixed(2)}
                                   </TableCell>
                                   <TableCell>
                                     <Badge
@@ -1479,14 +1395,6 @@ const Classificacao = () => {
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Depth:
-                                  </span>
-                                  <div className="font-semibold">
-                                    {row.pl_transit_depth_ppm.toFixed(0)} ppm
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">
                                     Radius:
                                   </span>
                                   <div className="font-semibold">
@@ -1495,18 +1403,18 @@ const Classificacao = () => {
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Eq. Temp.:
+                                    St. Temp.:
                                   </span>
                                   <div className="font-semibold">
-                                    {row.pl_eq_temp.toFixed(0)} K
+                                    {row.st_eff_temp.toFixed(0)} K
                                   </div>
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Flux:
+                                    St. Radius:
                                   </span>
                                   <div className="font-semibold">
-                                    {row.pl_insolation_flux.toFixed(1)}
+                                    {row.st_radius.toFixed(2)} R☉
                                   </div>
                                 </div>
                               </div>
