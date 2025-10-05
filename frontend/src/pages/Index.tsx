@@ -17,35 +17,13 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  ComposedChart,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  Cell,
 } from "recharts";
-
-const missionData = [
-  {
-    mission: "Kepler (KOI)",
-    discoveries: 2335,
-    accuracy: 0.93,
-    f1: 0.9,
-    rocAuc: 0.97,
-    prAuc: 0.92,
-  },
-  {
-    mission: "K2",
-    discoveries: 479,
-    accuracy: 0.91,
-    f1: 0.88,
-    rocAuc: 0.95,
-    prAuc: 0.9,
-  },
-  {
-    mission: "TESS",
-    discoveries: 387,
-    accuracy: 0.92,
-    f1: 0.89,
-    rocAuc: 0.96,
-    prAuc: 0.91,
-  },
-];
 
 const Index = () => {
   const [realMetrics, setRealMetrics] = useState<any>(null);
@@ -68,6 +46,72 @@ const Index = () => {
         setLoading(false);
       });
   }, []);
+
+  // Preparar dados para o gráfico de radar (métricas globais)
+  const getRadarData = () => {
+    if (!realMetrics) return [];
+    return [
+      {
+        metric: "Accuracy",
+        value: realMetrics.acuracia * 100,
+        fullMark: 100,
+      },
+      {
+        metric: "Precision",
+        value: realMetrics.precisao_planeta * 100,
+        fullMark: 100,
+      },
+      {
+        metric: "Recall",
+        value: realMetrics.recall_planeta * 100,
+        fullMark: 100,
+      },
+      {
+        metric: "F1-Score",
+        value: realMetrics.f1_score_planeta * 100,
+        fullMark: 100,
+      },
+      {
+        metric: "AUC-ROC",
+        value: realMetrics.auc_roc * 100,
+        fullMark: 100,
+      },
+      {
+        metric: "AUC-PRC",
+        value: realMetrics.auc_prc * 100,
+        fullMark: 100,
+      },
+    ];
+  };
+
+  // Preparar dados para comparação por satélite
+  const getSatelliteComparisonData = () => {
+    if (!satelliteMetrics) return [];
+    return Object.entries(satelliteMetrics).map(([satellite, metrics]: [string, any]) => ({
+      satellite,
+      Accuracy: (metrics.acuracia * 100).toFixed(1),
+      "F1-Score": (metrics.f1_score_planeta * 100).toFixed(1),
+      Recall: (metrics.recall_planeta * 100).toFixed(1),
+      Precision: (metrics.precisao_planeta * 100).toFixed(1),
+    }));
+  };
+
+  // Custom Tooltip para o gráfico de barras
+  const CustomBarTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-popover text-popover-foreground p-3 rounded-lg border border-border shadow-lg">
+          <p className="font-semibold mb-2">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className="text-sm" style={{ color: entry.color }}>
+              {entry.name}: <span className="font-semibold">{entry.value}%</span>
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="min-h-screen">
@@ -168,49 +212,99 @@ const Index = () => {
             />
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-card rounded-2xl p-8 shadow-lg">
-            <h3 className="text-2xl font-bold mb-6">
-              Discoveries and Performance by Mission
-            </h3>
-            <ResponsiveContainer width="100%" height={400}>
-              <ComposedChart data={missionData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                <XAxis dataKey="mission" />
-                <YAxis yAxisId="left" />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  domain={[0.85, 1.0]}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "0.5rem",
-                  }}
-                />
-                <Legend />
-                <Bar
-                  yAxisId="left"
-                  dataKey="discoveries"
-                  name="Discoveries"
-                  fill="hsl(var(--chart-1))"
-                />
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="rocAuc"
-                  name="ROC-AUC"
-                  stroke="hsl(var(--chart-2))"
-                  strokeWidth={3}
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </motion.div>
+          {/* Gráficos de Performance do Modelo */}
+          <div className="grid lg:grid-cols-2 gap-6 mb-12">
+            {/* Radar Chart - Visão geral das métricas */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-card rounded-2xl p-8 shadow-lg">
+              <h3 className="text-2xl font-bold mb-6">
+                Overall Model Performance
+              </h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                All key metrics in a single view
+              </p>
+              {loading ? (
+                <div className="h-[380px] flex items-center justify-center">
+                  <div className="text-muted-foreground">Loading metrics...</div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={380}>
+                  <RadarChart data={getRadarData()}>
+                    <PolarGrid stroke="hsl(var(--border))" />
+                    <PolarAngleAxis 
+                      dataKey="metric" 
+                      tick={{ fill: "hsl(var(--foreground))", fontSize: 14 }}
+                    />
+                    <PolarRadiusAxis 
+                      angle={90} 
+                      domain={[0, 100]}
+                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                    />
+                    <Radar
+                      name="Specttra Model"
+                      dataKey="value"
+                      stroke="hsl(var(--primary))"
+                      fill="hsl(var(--primary))"
+                      fillOpacity={0.6}
+                      strokeWidth={2}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--popover))",
+                        borderColor: "hsl(var(--border))",
+                        borderRadius: "0.5rem",
+                        color: "hsl(var(--popover-foreground))",
+                      }}
+                      formatter={(value: any) => `${Number(value).toFixed(1)}%`}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              )}
+            </motion.div>
+
+            {/* Bar Chart - Comparação por Satélite */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="bg-card rounded-2xl p-8 shadow-lg">
+              <h3 className="text-2xl font-bold mb-6">
+                Performance by Mission
+              </h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Accuracy and F1-Score across different space missions
+              </p>
+              {loading ? (
+                <div className="h-[380px] flex items-center justify-center">
+                  <div className="text-muted-foreground">Loading metrics...</div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={380}>
+                  <BarChart data={getSatelliteComparisonData()}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                    <XAxis 
+                      dataKey="satellite" 
+                      tick={{ fill: "hsl(var(--foreground))", fontSize: 14 }}
+                    />
+                    <YAxis 
+                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                      domain={[0, 100]}
+                    />
+                    <Tooltip content={<CustomBarTooltip />} />
+                    <Legend wrapperStyle={{ fontSize: "14px" }} />
+                    <Bar dataKey="Accuracy" fill="hsl(var(--chart-1))" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="F1-Score" fill="hsl(var(--chart-2))" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="Recall" fill="hsl(var(--chart-3))" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="Precision" fill="hsl(var(--chart-4))" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </motion.div>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-6 mt-12">
             {loading ? (
