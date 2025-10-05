@@ -1,23 +1,25 @@
-    # Use an official Bun image as the base
-    FROM oven/bun:latest
+# Stage 1: Build the static assets using Bun
+FROM oven/bun:latest AS build
 
-    # Set the working directory inside the container
-    WORKDIR /app
+WORKDIR /app
 
-    # Copy package.json and bun.lockb to leverage Docker's cache
-    COPY package.json bun.lockb ./
+# Copy dependency manifests and install dependencies
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile
 
-    # Install dependencies using Bun
-    RUN bun install
+# Copy the rest of the source code and build the project
+COPY . .
+RUN bun run build
 
-    # Copy the rest of your application files
-    COPY . .
+# Stage 2: Serve the static assets with Nginx
+FROM nginx:stable-alpine
 
-    # Build your Bun project (if needed, e.g., for a Next.js app)
-    # RUN bun run build
+# Copy the built files from the 'build' stage's 'dist' folder
+COPY --from=build /app/dist /usr/share/nginx/html
 
-    # Expose the port your application listens on (e.g., 3000)
-    EXPOSE 8080
+# Copy a custom Nginx configuration file (optional but recommended)
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-    # Command to run your application when the container starts
-    CMD ["bun", "run", "dev"]
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
