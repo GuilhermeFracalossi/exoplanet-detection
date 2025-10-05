@@ -8,6 +8,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./specttra-api/app/models:/code/app/models 
+      - ./training_notebooks:/training_notebooks
     ports:
       - "8000:8000"
 
