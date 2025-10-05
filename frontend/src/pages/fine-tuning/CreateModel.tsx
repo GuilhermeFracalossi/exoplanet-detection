@@ -50,6 +50,7 @@ const CreateModel = () => {
     "upload" | "config" | "training" | "complete"
   >("upload");
   const [file, setFile] = useState<File | null>(null);
+  const [modelName, setModelName] = useState("");
   const [trainingStatus, setTrainingStatus] = useState("");
 
   const [hyperparams, setHyperparams] = useState({
@@ -184,10 +185,10 @@ const CreateModel = () => {
   };
 
   const handleStartTraining = async () => {
-    if (!file) {
+    if (!file || !modelName.trim()) {
       toast({
         title: "Missing information",
-        description: "Please upload training data.",
+        description: "Please provide a model name and upload training data.",
         variant: "destructive",
       });
       return;
@@ -197,9 +198,10 @@ const CreateModel = () => {
     setTrainingStatus("Preparing data and training model...");
 
     try {
-      // Prepare FormData with file and hyperparameters
+      // Prepare FormData with file, name and hyperparameters
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("name", modelName.trim());
 
       // Append all hyperparameters individually
       formData.append("n_estimators", hyperparams.n_estimators.toString());
@@ -328,11 +330,26 @@ const CreateModel = () => {
                   Training Data
                 </CardTitle>
                 <CardDescription>
-                  Upload your CSV file with features and isPlanet labels. The
-                  model name will be automatically generated.
+                  Upload your CSV file with features and isPlanet labels, and
+                  give your model a name.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="modelName">Model Name *</Label>
+                  <Input
+                    id="modelName"
+                    type="text"
+                    placeholder="e.g., My Custom Exoplanet Model"
+                    value={modelName}
+                    onChange={(e) => setModelName(e.target.value)}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Choose a descriptive name for your custom model
+                  </p>
+                </div>
+
                 <div>
                   <Label htmlFor="trainingFile">CSV File *</Label>
                   <Input
@@ -383,7 +400,7 @@ const CreateModel = () => {
 
                 <Button
                   onClick={() => setStep("config")}
-                  disabled={!file}
+                  disabled={!file || !modelName.trim()}
                   size="lg"
                   className="w-full">
                   Configure Hyperparameters

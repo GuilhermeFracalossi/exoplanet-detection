@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.pa
 BASE_DATA_DIR = os.path.join(BASE_DIR, "data", "test_data_for_prediction.csv")
 BASE_MODEL_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models"))
 
-def train_model(user_dataset_path: str, main_dataset_path: str, user_params: dict):
+def train_model(user_dataset_path: str, main_dataset_path: str, user_params: dict, model_name: str = None):
     """
     Train a LightGBM model using both the base dataset and the user-uploaded dataset.
     Ensures that data is split safely by star system (star_id).
@@ -29,6 +29,7 @@ def train_model(user_dataset_path: str, main_dataset_path: str, user_params: dic
         user_dataset_path (str): Path to the user-uploaded CSV.
         main_dataset_path (str): Path to the base dataset.
         user_params (dict): Model hyperparameters provided by the user.
+        model_name (str, optional): Custom name for the model.
 
     Returns:
         dict: Performance metrics and saved model information.
@@ -122,8 +123,11 @@ def train_model(user_dataset_path: str, main_dataset_path: str, user_params: dic
     metadata_folder = os.path.join(model_folder, "metadata")
     os.makedirs(metadata_folder, exist_ok=True)  
 
+    # Use custom name if provided, otherwise use timestamp-based name
+    display_name = model_name if model_name else f"lightgbm_model_{timestamp}"
+
     metadata = {
-        "model_name": f"lightgbm_model_{timestamp}",
+        "model_name": display_name,
         "model_path": model_path,
         "scaler_path": scaler_path, 
         "created_at": timestamp,

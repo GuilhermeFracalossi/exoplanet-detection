@@ -16,6 +16,7 @@ BASE_DATASET_PATH = os.path.join(BASE_DIR, "data", "base_exoplanet_dataset.csv")
 @router.post("/train")
 async def train_lightgbm_endpoint(
     file: UploadFile = File(...),
+    name: Optional[str] = Form(None),
     hyperparams: Optional[str] = Form(None)
 ):
     """
@@ -44,7 +45,7 @@ async def train_lightgbm_endpoint(
                 raise HTTPException(status_code=400, detail=f"Invalid hyperparams JSON: {e}")
 
         # --- Train model ---
-        result = train_model(user_csv_path, BASE_DATASET_PATH, user_params)
+        result = train_model(user_csv_path, BASE_DATASET_PATH, user_params, model_name=name)
 
         # --- Cleanup temporary file ---
         os.remove(user_csv_path)

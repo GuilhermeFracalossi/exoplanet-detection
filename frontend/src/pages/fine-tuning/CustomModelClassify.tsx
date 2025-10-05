@@ -39,7 +39,6 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -272,19 +271,9 @@ const CustomModelClassify = () => {
   const sendCSVToAPI = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("model_id", modelId || ""); // Add custom model ID
+    formData.append("model_path", modelInfo?.model_path || ""); // Add custom model path
     formData.append("threshold", threshold[0].toString());
 
-    // TODO: Replace with actual API endpoint
-    // const response = await fetch(`http://localhost:8000/api/v1/fine-tuning/predict/${modelId}`, {
-    //   method: "POST",
-    //   body: formData,
-    //   headers: {
-    //     'Authorization': `Bearer ${token}`
-    //   }
-    // });
-
-    // Mock API response
     const response = await fetch("http://localhost:8000/api/v1/predict", {
       method: "POST",
       body: formData,
@@ -732,14 +721,15 @@ const CustomModelClassify = () => {
             {isProcessing && (
               <Card>
                 <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
-                      <span className="text-sm font-medium">
-                        Processing data with your custom model...
-                      </span>
-                    </div>
-                    <Progress value={66} />
+                  <div className="bg-muted/30 rounded-lg p-8 text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent mx-auto mb-4" />
+                    <p className="text-base font-medium mb-2">
+                      Processing data with your custom model...
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Classifying exoplanet candidates with{" "}
+                      {modelInfo?.name || "custom model"}
+                    </p>
                   </div>
                 </CardContent>
               </Card>

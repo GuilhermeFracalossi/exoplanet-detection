@@ -88,6 +88,7 @@ const FineTuningList = () => {
             ),
             description: "Custom trained exoplanet detection model",
             created_at: formattedDate,
+            model_path: model.model_path || "", // Add model_path from API response
             metrics: {
               roc_auc: metrics.auc_roc || 0,
               prc_auc: metrics.auc_prc || 0,
