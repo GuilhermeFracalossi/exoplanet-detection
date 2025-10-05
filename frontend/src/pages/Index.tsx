@@ -23,6 +23,7 @@ import {
   PolarRadiusAxis,
   Radar,
   Cell,
+  LabelList,
 } from "recharts";
 
 const Index = () => {
@@ -206,17 +207,21 @@ const Index = () => {
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <MetricCard
-              title={loading ? "Loading..." : "Model Accuracy"}
+              title={loading ? "Loading..." : "F1-Score Planet"}
               value={
-                loading ? "..." : `${(realMetrics?.acuracia * 100).toFixed(1)}%`
+                loading
+                  ? "..."
+                  : `${(realMetrics?.f1_score_planeta * 100).toFixed(1)}%`
               }
-              description="Test Set Performance"
+              description="Balanced precision and recall"
               icon={<TrendingUp className="h-4 w-4" />}
               delay={0}
             />
             <MetricCard
               title={loading ? "Loading..." : "ROC-AUC Score"}
-              value={loading ? "..." : realMetrics?.auc_roc.toFixed(3)}
+              value={
+                loading ? "..." : `${(realMetrics?.auc_roc * 100).toFixed(1)}%`
+              }
               description="Excellent discrimination"
               icon={<Cpu className="h-4 w-4" />}
               delay={0.1}
@@ -328,7 +333,7 @@ const Index = () => {
                         fontSize: 12,
                       }}
                       domain={[0, 100]}
-                      tickFormatter={(value) => `${value}%`}
+                      tickFormatter={(value) => `${value.toFixed(2)}%`}
                     />
                     <Tooltip
                       cursor={{ fill: "rgba(139, 92, 246, 0.08)" }}
@@ -347,6 +352,10 @@ const Index = () => {
                         color: "hsl(var(--muted-foreground))",
                         fontSize: 13,
                       }}
+                      formatter={(value: number, name: string) => [
+                        `${value.toFixed(2)}%`,
+                        name,
+                      ]}
                     />
                     <Legend
                       wrapperStyle={{ fontSize: "14px", paddingTop: "10px" }}

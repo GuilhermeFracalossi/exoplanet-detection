@@ -71,7 +71,7 @@ const Classificacao = () => {
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [pageInput, setPageInput] = useState<string>("1");
 
-  // Novos estados para visualização de dados
+  // New states for data visualization
   const [csvData, setCsvData] = useState<any[]>([]);
   const [showDataPreview, setShowDataPreview] = useState(false);
   const [previewPage, setPreviewPage] = useState(1);
@@ -86,13 +86,13 @@ const Classificacao = () => {
     try {
       setLoadingModelInfo(true);
 
-      // Buscar métricas da API
+      // Fetch API metrics
       const response = await fetch("http://localhost:8000/api/v1/metrics", {
         method: "GET",
       });
 
       if (!response.ok) {
-        console.warn("Não foi possível carregar informações do modelo");
+        console.warn("Could not load model information");
         setModelInfo(null);
         return;
       }
@@ -351,10 +351,10 @@ const Classificacao = () => {
       // Send CSV to API
       const apiData = await sendCSVToAPI(file);
 
-      // Ler dados completos do CSV
+      // Read complete CSV data
       const csvData = await parseCSV(file);
 
-      // Garante que apiData seja sempre um array
+      // Ensure apiData is always an array
       const apiDataArray = Array.isArray(apiData) ? apiData : [apiData];
 
       console.log("=== Classification Matching Debug ===");
@@ -380,25 +380,25 @@ const Classificacao = () => {
         );
       }
 
-      // Combinar dados da API (predições) com dados do CSV
+      // Combine API data (predictions) with CSV data
       const mappedRows = apiDataArray
         .map((apiItem: any) => {
           // Normalize transit_id for comparison (trim whitespace and convert to string)
           const apiTransitId = String(apiItem.transit_id).trim();
 
-          // Encontrar a linha correspondente no CSV pelo transit_id
+          // Find corresponding row in CSV by transit_id
           const csvRow = csvData.find(
             (row) => String(row.transit_id).trim() === apiTransitId
           );
 
           if (!csvRow) {
             console.warn(
-              `Linha não encontrada no CSV para transit_id: '${apiItem.transit_id}' (normalized: '${apiTransitId}')`
+              `Row not found in CSV for transit_id: '${apiItem.transit_id}' (normalized: '${apiTransitId}')`
             );
             return null;
           }
 
-          // Mapear predição (1 = CONFIRMED, 0 = FALSE POSITIVE, etc)
+          // Map prediction (1 = CONFIRMED, 0 = FALSE POSITIVE, etc)
           const predictionMap: any = {
             "1": "CONFIRMED",
             "0": "FALSE",
@@ -417,7 +417,7 @@ const Classificacao = () => {
             st_radius: csvRow.st_radius || 0,
           };
         })
-        .filter((row) => row !== null); // Remove linhas nulas
+        .filter((row) => row !== null); // Remove null rows
 
       console.log("Successfully mapped:", mappedRows.length, "rows");
       console.log("Lost rows:", apiDataArray.length - mappedRows.length);
@@ -457,7 +457,7 @@ const Classificacao = () => {
     }
   };
 
-  // Filtrar e paginar resultados
+  // Filter and paginate results
   const getFilteredResults = () => {
     if (!results) return [];
 
@@ -478,13 +478,13 @@ const Classificacao = () => {
     const thresholdValue = classificationThreshold[0];
 
     if (confidence >= thresholdValue) {
-      return "PLANETA CONFIRMADO";
+      return "CONFIRMED PLANET";
     } else if (confidence >= thresholdValue - 0.15) {
-      return "CANDIDATO FORTE";
+      return "STRONG CANDIDATE";
     } else if (confidence >= thresholdValue - 0.3) {
-      return "CANDIDATO FRACO";
+      return "WEAK CANDIDATE";
     } else {
-      return "FALSO POSITIVO";
+      return "FALSE POSITIVE";
     }
   };
 
@@ -493,10 +493,10 @@ const Classificacao = () => {
     if (!results) return {};
 
     const summary: any = {
-      "PLANETA CONFIRMADO": 0,
-      "CANDIDATO FORTE": 0,
-      "CANDIDATO FRACO": 0,
-      "FALSO POSITIVO": 0,
+      "CONFIRMED PLANET": 0,
+      "STRONG CANDIDATE": 0,
+      "WEAK CANDIDATE": 0,
+      "FALSE POSITIVE": 0,
     };
 
     results.rows.forEach((row: any) => {
@@ -690,13 +690,13 @@ const Classificacao = () => {
 
   const getPredictionColor = (prediction: string) => {
     switch (prediction) {
-      case "PLANETA CONFIRMADO":
+      case "CONFIRMED PLANET":
         return "default";
-      case "CANDIDATO FORTE":
+      case "STRONG CANDIDATE":
         return "secondary";
-      case "CANDIDATO FRACO":
+      case "WEAK CANDIDATE":
         return "outline";
-      case "FALSO POSITIVO":
+      case "FALSE POSITIVE":
         return "destructive";
       default:
         return "outline";
@@ -1347,16 +1347,16 @@ const Classificacao = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="PLANETA CONFIRMADO">
+                        <SelectItem value="CONFIRMED PLANET">
                           Confirmed Planet
                         </SelectItem>
-                        <SelectItem value="CANDIDATO FORTE">
+                        <SelectItem value="STRONG CANDIDATE">
                           Strong Candidate
                         </SelectItem>
-                        <SelectItem value="CANDIDATO FRACO">
+                        <SelectItem value="WEAK CANDIDATE">
                           Weak Candidate
                         </SelectItem>
-                        <SelectItem value="FALSO POSITIVO">
+                        <SelectItem value="FALSE POSITIVE">
                           False Positive
                         </SelectItem>
                       </SelectContent>
@@ -1439,7 +1439,7 @@ const Classificacao = () => {
                     </div>
                   )}
 
-                  {/* Visualização em Cards */}
+                  {/* Card View */}
                   {viewMode === "cards" && (
                     <div className="grid md:grid-cols-2 gap-4">
                       {getPaginatedResults().map((row: any) => {
