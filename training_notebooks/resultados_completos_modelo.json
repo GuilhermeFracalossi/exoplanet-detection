@@ -1,16 +1,46 @@
 {
-  "modelos_internos": [
-    {
-      "Modelo": "Specttra-1",
-      "AUC ROC Média": 0.9072015875256294,
-      "AUC PRC Média": 0.9341440640808341,
-      "Acurácia Média": 0.8430716632568602,
-      "Precisão (Planeta) Média": 0.8737987163791793,
-      "Recall (Planeta) Média": 0.8831469435180981,
-      "Precisão (Non Planet) Média": 0.7863332179285427,
-      "Recall (Non Planet) Média": 0.7712066269959742,
-      "F1 (Planeta) Média": 0.8784241638964321,
-      "F1 (Non Planet) Média": 0.7786268306153357
+    "resultados_cv_melhor_modelo": {
+        "Modelo": "LightGBM (Optuna v2)",
+        "Threshold Ótimo": 0.32035691896669766,
+        "AUC ROC Média": 0.9002974455869891,
+        "AUC PRC Média": 0.9318386887483617,
+        "Acurácia Média": 0.8428872748649539,
+        "Precisão (Planeta) Média": 0.8416666389661754,
+        "Recall (Planeta) Média": 0.9337505706005482,
+        "Precisão (Non Planet) Média": 0.8467802584503925,
+        "Recall (Non Planet) Média": 0.6750526648351021,
+        "F1 (Planeta) Média": 0.88524344719896,
+        "F1 (Non Planet) Média": 0.7508769425560013
+    },
+    "metricas_globais_teste": {
+        "acuracia": 0.8376172990616075,
+        "auc_roc": 0.8968819137668991,
+        "auc_prc": 0.9269040676166626,
+        "recall_planeta": 0.920584498094028,
+        "precisao_planeta": 0.8414634146341463,
+        "f1_score_planeta": 0.879247572815534
+    },
+    "metricas_por_satelite_teste": {
+        "Kepler": {
+            "acuracia": 0.8387553041018387,
+            "recall_planeta": 0.9015471167369902,
+            "precisao_planeta": 0.8022528160200251,
+            "f1_score_planeta": 0.8490066225165563,
+            "auc_roc": 0.9212096840344676
+        },
+        "TESS": {
+            "acuracia": 0.8383733055265902,
+            "recall_planeta": 0.949238578680203,
+            "precisao_planeta": 0.8667439165701043,
+            "f1_score_planeta": 0.9061175045427013,
+            "auc_roc": 0.7846795499747676
+        },
+        "K2": {
+            "acuracia": 0.8076923076923077,
+            "recall_planeta": 0.8,
+            "precisao_planeta": 1.0,
+            "f1_score_planeta": 0.8888888888888888,
+            "auc_roc": 0.8400000000000001
+        }
     }
-  ]
 }
