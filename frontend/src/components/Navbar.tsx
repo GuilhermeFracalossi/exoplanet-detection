@@ -60,14 +60,15 @@ export const Navbar = () => {
             </Link>
           ))}
           <ThemeToggle />
-          <a
-            href="https://github.com/GuilhermeFracalossi/exoplanet-detection"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-primary transition-colors"
-            aria-label="GitHub Repository">
-            <GitHubIcon className="h-5 w-5" />
-          </a>
+          <Button variant="ghost" size="icon" asChild>
+            <a
+              href="https://github.com/GuilhermeFracalossi/exoplanet-detection"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub Repository">
+              <GitHubIcon className="h-5 w-5" />
+            </a>
+          </Button>
           <Button variant="default" size="sm" asChild>
             <Link to="/classificacao">Get Started</Link>
           </Button>
@@ -76,14 +77,15 @@ export const Navbar = () => {
         {/* Botão Hambúrguer e Theme Toggle para Mobile */}
         <div className="flex items-center gap-2 md:hidden">
           <ThemeToggle />
-          <a
-            href="https://github.com/GuilhermeFracalossi/exoplanet-detection"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-primary transition-colors"
-            aria-label="GitHub Repository">
-            <GitHubIcon className="h-5 w-5" />
-          </a>
+          <Button variant="ghost" size="icon" asChild>
+            <a
+              href="https://github.com/GuilhermeFracalossi/exoplanet-detection"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub Repository">
+              <GitHubIcon className="h-5 w-5" />
+            </a>
+          </Button>
           <Button
             variant="ghost"
             size="icon"
