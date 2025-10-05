@@ -1,6 +1,19 @@
 {
     "comparacao_modelos_cv": [
         {
+            "Modelo": "LightGBM (Optuna v2)",
+            "Threshold Ótimo": 0.32035691896669766,
+            "AUC ROC Média": 0.9002974455869891,
+            "AUC PRC Média": 0.9318386887483617,
+            "Acurácia Média": 0.8428872748649539,
+            "Precisão (Planeta) Média": 0.8416666389661754,
+            "Recall (Planeta) Média": 0.9337505706005482,
+            "Precisão (Non Planet) Média": 0.8467802584503925,
+            "Recall (Non Planet) Média": 0.6750526648351021,
+            "F1 (Planeta) Média": 0.88524344719896,
+            "F1 (Non Planet) Média": 0.7508769425560013
+        },
+        {
             "Modelo": "LightGBM (Optuna saved)",
             "Threshold Ótimo": 0.36018102336056373,
             "AUC ROC Média": 0.9000187654537186,
@@ -53,19 +66,6 @@
             "F1 (Non Planet) Média": 0.7442318107109782
         },
         {
-            "Modelo": "Random Forest",
-            "Threshold Ótimo": 0.472,
-            "AUC ROC Média": 0.8927960205681149,
-            "AUC PRC Média": 0.9234053219971285,
-            "Acurácia Média": 0.8372686261288333,
-            "Precisão (Planeta) Média": 0.8398383265073474,
-            "Recall (Planeta) Média": 0.9261698532412923,
-            "Precisão (Non Planet) Média": 0.8316523562849752,
-            "Recall (Non Planet) Média": 0.6728046282277691,
-            "F1 (Planeta) Média": 0.8808001513391318,
-            "F1 (Non Planet) Média": 0.7433531897029056
-        },
-        {
             "Modelo": "XGBoost",
             "Threshold Ótimo": 0.27991288900375366,
             "AUC ROC Média": 0.8895415501669136,
@@ -77,42 +77,37 @@
             "Recall (Non Planet) Média": 0.6411991867619944,
             "F1 (Planeta) Média": 0.8797865385398561,
             "F1 (Non Planet) Média": 0.7294185585460389
-        },
-        {
-            "Modelo": "Gradient Boosting",
-            "Threshold Ótimo": 0.48678533925674944,
-            "AUC ROC Média": 0.881302032355841,
-            "AUC PRC Média": 0.9153183121994083,
-            "Acurácia Média": 0.8287099084229931,
-            "Precisão (Planeta) Média": 0.8253509255477003,
-            "Recall (Planeta) Média": 0.9339512106537186,
-            "Precisão (Non Planet) Média": 0.8391107676765746,
-            "Recall (Non Planet) Média": 0.6339428182441177,
-            "F1 (Planeta) Média": 0.8762086680482042,
-            "F1 (Non Planet) Média": 0.7216687197609104
         }
     ],
+    "metricas_globais_teste": {
+        "acuracia": 0.8376172990616075,
+        "auc_roc": 0.8968819137668991,
+        "auc_prc": 0.9269040676166626,
+        "recall_planeta": 0.920584498094028,
+        "precisao_planeta": 0.8414634146341463,
+        "f1_score_planeta": 0.879247572815534
+    },
     "metricas_por_satelite_teste": {
         "Kepler": {
-            "acuracia": 0.8394625176803394,
-            "recall_planeta": 0.8888888888888888,
-            "precisao_planeta": 0.8102564102564103,
-            "f1_score_planeta": 0.8477531857813548,
-            "auc_roc": 0.920227355936883
+            "acuracia": 0.8387553041018387,
+            "recall_planeta": 0.9015471167369902,
+            "precisao_planeta": 0.8022528160200251,
+            "f1_score_planeta": 0.8490066225165563,
+            "auc_roc": 0.9212096840344676
         },
         "TESS": {
-            "acuracia": 0.8331595411887383,
-            "recall_planeta": 0.9416243654822335,
-            "precisao_planeta": 0.866822429906542,
-            "f1_score_planeta": 0.902676399026764,
-            "auc_roc": 0.7883011250630807
+            "acuracia": 0.8383733055265902,
+            "recall_planeta": 0.949238578680203,
+            "precisao_planeta": 0.8667439165701043,
+            "f1_score_planeta": 0.9061175045427013,
+            "auc_roc": 0.7846795499747676
         },
         "K2": {
-            "acuracia": 0.7948717948717948,
-            "recall_planeta": 0.7866666666666666,
+            "acuracia": 0.8076923076923077,
+            "recall_planeta": 0.8,
             "precisao_planeta": 1.0,
-            "f1_score_planeta": 0.8805970149253731,
-            "auc_roc": 0.8133333333333332
+            "f1_score_planeta": 0.8888888888888888,
+            "auc_roc": 0.8400000000000001
         }
     }
 }
