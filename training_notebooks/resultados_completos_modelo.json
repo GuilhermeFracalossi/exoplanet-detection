@@ -1,46 +1,46 @@
 {
     "resultados_cv_melhor_modelo": {
-        "Modelo": "LightGBM (Optuna v2)",
-        "Threshold Ótimo": 0.32035691896669766,
-        "AUC ROC Média": 0.9002974455869891,
-        "AUC PRC Média": 0.9318386887483617,
-        "Acurácia Média": 0.8428872748649539,
-        "Precisão (Planeta) Média": 0.8416666389661754,
-        "Recall (Planeta) Média": 0.9337505706005482,
-        "Precisão (Non Planet) Média": 0.8467802584503925,
-        "Recall (Non Planet) Média": 0.6750526648351021,
-        "F1 (Planeta) Média": 0.88524344719896,
-        "F1 (Non Planet) Média": 0.7508769425560013
+        "Modelo": "LightGBM (Optuna new v3)",
+        "Threshold Ótimo": 0.34710830036155926,
+        "AUC ROC Média": 0.9008665009737458,
+        "AUC PRC Média": 0.9322817090966907,
+        "Acurácia Média": 0.8436800064365737,
+        "Precisão (Planeta) Média": 0.8468123582954389,
+        "Recall (Planeta) Média": 0.9268463730605478,
+        "Precisão (Non Planet) Média": 0.8362194878246376,
+        "Recall (Non Planet) Média": 0.6899936833956392,
+        "F1 (Planeta) Média": 0.8849932363663859,
+        "F1 (Non Planet) Média": 0.7559919755826756
     },
     "metricas_globais_teste": {
-        "acuracia": 0.8376172990616075,
-        "auc_roc": 0.8968819137668991,
-        "auc_prc": 0.9269040676166626,
-        "recall_planeta": 0.920584498094028,
-        "precisao_planeta": 0.8414634146341463,
-        "f1_score_planeta": 0.879247572815534
+        "acuracia": 0.8372093023255814,
+        "auc_roc": 0.8980337554821145,
+        "auc_prc": 0.9281506489757418,
+        "recall_planeta": 0.9142312579415502,
+        "precisao_planeta": 0.8449794480328832,
+        "f1_score_planeta": 0.8782422947818126
     },
     "metricas_por_satelite_teste": {
         "Kepler": {
             "acuracia": 0.8387553041018387,
-            "recall_planeta": 0.9015471167369902,
-            "precisao_planeta": 0.8022528160200251,
-            "f1_score_planeta": 0.8490066225165563,
-            "auc_roc": 0.9212096840344676
+            "recall_planeta": 0.8931082981715893,
+            "precisao_planeta": 0.806861499364676,
+            "f1_score_planeta": 0.8477970627503337,
+            "auc_roc": 0.9227141865383038
         },
         "TESS": {
             "acuracia": 0.8383733055265902,
-            "recall_planeta": 0.949238578680203,
-            "precisao_planeta": 0.8667439165701043,
-            "f1_score_planeta": 0.9061175045427013,
-            "auc_roc": 0.7846795499747676
+            "recall_planeta": 0.9454314720812182,
+            "precisao_planeta": 0.8693115519253208,
+            "f1_score_planeta": 0.9057750759878419,
+            "auc_roc": 0.7865348650814854
         },
         "K2": {
-            "acuracia": 0.8076923076923077,
-            "recall_planeta": 0.8,
+            "acuracia": 0.7948717948717948,
+            "recall_planeta": 0.7866666666666666,
             "precisao_planeta": 1.0,
-            "f1_score_planeta": 0.8888888888888888,
-            "auc_roc": 0.8400000000000001
+            "f1_score_planeta": 0.8805970149253731,
+            "auc_roc": 0.8311111111111111
         }
     }
 }
