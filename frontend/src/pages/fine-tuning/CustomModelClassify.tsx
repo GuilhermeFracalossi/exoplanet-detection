@@ -159,10 +159,26 @@ const CustomModelClassify = () => {
           const row: any = {};
           headers.forEach((header, index) => {
             const value = values[index];
-            row[header] = isNaN(Number(value)) ? value : Number(value);
+            // Keep transit_id as string, convert others to number if possible
+            if (header.toLowerCase() === "transit_id") {
+              row[header] = value;
+            } else {
+              row[header] = isNaN(Number(value)) ? value : Number(value);
+            }
           });
           return row;
         });
+
+        console.log("CSV parsed:", data.length, "rows");
+        if (data.length > 0) {
+          console.log(
+            "Sample transit_id from CSV:",
+            data[0].transit_id,
+            "(type:",
+            typeof data[0].transit_id,
+            ")"
+          );
+        }
 
         resolve(data);
       };
@@ -305,15 +321,41 @@ const CustomModelClassify = () => {
       const csvData = await parseCSV(file);
       const apiDataArray = Array.isArray(apiData) ? apiData : [apiData];
 
+      console.log("=== Custom Model Classification Matching Debug ===");
+      console.log("API returned:", apiDataArray.length, "predictions");
+      console.log("CSV contains:", csvData.length, "rows");
+
+      if (apiDataArray.length > 0) {
+        console.log(
+          "Sample API transit_id:",
+          apiDataArray[0].transit_id,
+          "(type:",
+          typeof apiDataArray[0].transit_id,
+          ")"
+        );
+      }
+      if (csvData.length > 0) {
+        console.log(
+          "Sample CSV transit_id:",
+          csvData[0].transit_id,
+          "(type:",
+          typeof csvData[0].transit_id,
+          ")"
+        );
+      }
+
       const mappedRows = apiDataArray
         .map((apiItem: any) => {
+          // Normalize transit_id for comparison (trim whitespace and convert to string)
+          const apiTransitId = String(apiItem.transit_id).trim();
+
           const csvRow = csvData.find(
-            (row) => row.transit_id === apiItem.transit_id
+            (row) => String(row.transit_id).trim() === apiTransitId
           );
 
           if (!csvRow) {
             console.warn(
-              `Row not found in CSV for transit_id: ${apiItem.transit_id}`
+              `Row not found in CSV for transit_id: '${apiItem.transit_id}' (normalized: '${apiTransitId}')`
             );
             return null;
           }
@@ -337,6 +379,9 @@ const CustomModelClassify = () => {
           };
         })
         .filter((row) => row !== null);
+
+      console.log("Successfully mapped:", mappedRows.length, "rows");
+      console.log("Lost rows:", apiDataArray.length - mappedRows.length);
 
       setResults({
         rows: mappedRows,
