@@ -90,10 +90,10 @@ const Index = () => {
     return Object.entries(satelliteMetrics).map(
       ([satellite, metrics]: [string, any]) => ({
         satellite,
-        Accuracy: (metrics.acuracia * 100).toFixed(1),
-        "F1-Score": (metrics.f1_score_planeta * 100).toFixed(1),
-        Recall: (metrics.recall_planeta * 100).toFixed(1),
-        Precision: (metrics.precisao_planeta * 100).toFixed(1),
+        Accuracy: metrics.acuracia * 100,
+        "F1-Score": metrics.f1_score_planeta * 100,
+        Recall: metrics.recall_planeta * 100,
+        Precision: metrics.precisao_planeta * 100,
       })
     );
   };
@@ -102,14 +102,28 @@ const Index = () => {
   const CustomBarTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-popover text-popover-foreground p-3 rounded-lg border border-border shadow-lg">
-          <p className="font-semibold mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}:{" "}
-              <span className="font-semibold">{entry.value}%</span>
-            </p>
-          ))}
+        <div className="bg-popover text-popover-foreground p-4 rounded-lg border border-border shadow-lg">
+          <p className="font-bold mb-3 text-base">{label}</p>
+          <div className="space-y-1">
+            {payload.map((entry: any, index: number) => (
+              <div
+                key={index}
+                className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-sm"
+                    style={{ backgroundColor: entry.color }}
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {entry.name}
+                  </span>
+                </div>
+                <span className="font-semibold text-sm">
+                  {Number(entry.value).toFixed(1)}%
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       );
     }
@@ -136,8 +150,11 @@ const Index = () => {
               </h1>
               <p className="text-lg sm:text-xl text-muted-foreground mb-8">
                 Proprietary algorithm trained on Kepler, K2 and TESS mission
-                data. Classify exoplanet candidates with up to 97% ROC-AUC
-                accuracy.
+                data. Classify exoplanet candidates with up to{" "}
+                {loading
+                  ? "..."
+                  : `${(realMetrics?.auc_roc * 100).toFixed(1)}%`}{" "}
+                ROC-AUC accuracy.
               </p>
               <div className="flex flex-col sm:flex-row flex-wrap gap-4">
                 <Button size="lg" asChild className="group">
@@ -189,26 +206,30 @@ const Index = () => {
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <MetricCard
-              title="Total Exoplanets"
-              value="3,201"
-              description="Confirmed in missions"
-              icon={<Database className="h-4 w-4" />}
-              delay={0}
-            />
-            <MetricCard
               title={loading ? "Loading..." : "Model Accuracy"}
               value={
                 loading ? "..." : `${(realMetrics?.acuracia * 100).toFixed(1)}%`
               }
               description="Test Set Performance"
               icon={<TrendingUp className="h-4 w-4" />}
-              delay={0.1}
+              delay={0}
             />
             <MetricCard
               title={loading ? "Loading..." : "ROC-AUC Score"}
               value={loading ? "..." : realMetrics?.auc_roc.toFixed(3)}
               description="Excellent discrimination"
               icon={<Cpu className="h-4 w-4" />}
+              delay={0.1}
+            />
+            <MetricCard
+              title={loading ? "Loading..." : "Planet Precision"}
+              value={
+                loading
+                  ? "..."
+                  : `${(realMetrics?.precisao_planeta * 100).toFixed(1)}%`
+              }
+              description="Positive predictive value"
+              icon={<Database className="h-4 w-4" />}
               delay={0.2}
             />
           </div>
@@ -292,7 +313,10 @@ const Index = () => {
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={380}>
-                  <BarChart data={getSatelliteComparisonData()}>
+                  <BarChart
+                    data={getSatelliteComparisonData()}
+                    barGap={6}
+                    barCategoryGap="15%">
                     <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
                     <XAxis
                       dataKey="satellite"
@@ -304,28 +328,77 @@ const Index = () => {
                         fontSize: 12,
                       }}
                       domain={[0, 100]}
+                      tickFormatter={(value) => `${value}%`}
                     />
-                    <Tooltip content={<CustomBarTooltip />} />
-                    <Legend wrapperStyle={{ fontSize: "14px" }} />
+                    <Tooltip
+                      cursor={{ fill: "rgba(139, 92, 246, 0.08)" }}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--background))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "10px",
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                      }}
+                      labelStyle={{
+                        color: "hsl(var(--foreground))",
+                        fontWeight: 600,
+                        fontSize: 14,
+                      }}
+                      itemStyle={{
+                        color: "hsl(var(--muted-foreground))",
+                        fontSize: 13,
+                      }}
+                    />
+                    <Legend
+                      wrapperStyle={{ fontSize: "14px", paddingTop: "10px" }}
+                      iconType="circle"
+                    />
                     <Bar
                       dataKey="Accuracy"
-                      fill="hsl(var(--chart-1))"
+                      fill="#8b5cf6"
                       radius={[8, 8, 0, 0]}
+                      animationDuration={500}
+                      onMouseOver={(e) =>
+                        (e.target.style.filter = "brightness(1.2)")
+                      }
+                      onMouseOut={(e) =>
+                        (e.target.style.filter = "brightness(1)")
+                      }
                     />
                     <Bar
                       dataKey="F1-Score"
-                      fill="hsl(var(--chart-2))"
+                      fill="#3b82f6"
                       radius={[8, 8, 0, 0]}
+                      animationDuration={500}
+                      onMouseOver={(e) =>
+                        (e.target.style.filter = "brightness(1.2)")
+                      }
+                      onMouseOut={(e) =>
+                        (e.target.style.filter = "brightness(1)")
+                      }
                     />
                     <Bar
                       dataKey="Recall"
-                      fill="hsl(var(--chart-3))"
+                      fill="#10b981"
                       radius={[8, 8, 0, 0]}
+                      animationDuration={500}
+                      onMouseOver={(e) =>
+                        (e.target.style.filter = "brightness(1.2)")
+                      }
+                      onMouseOut={(e) =>
+                        (e.target.style.filter = "brightness(1)")
+                      }
                     />
                     <Bar
                       dataKey="Precision"
-                      fill="hsl(var(--chart-4))"
+                      fill="#f59e0b"
                       radius={[8, 8, 0, 0]}
+                      animationDuration={500}
+                      onMouseOver={(e) =>
+                        (e.target.style.filter = "brightness(1.2)")
+                      }
+                      onMouseOut={(e) =>
+                        (e.target.style.filter = "brightness(1)")
+                      }
                     />
                   </BarChart>
                 </ResponsiveContainer>

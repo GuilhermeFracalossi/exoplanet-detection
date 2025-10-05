@@ -9,7 +9,6 @@ import Classificacao from "./pages/Classificacao";
 import FineTuning from "./pages/FineTuning";
 import CreateModel from "./pages/fine-tuning/CreateModel";
 import CustomModelClassify from "./pages/fine-tuning/CustomModelClassify";
-import { Planos } from "./pages/Planos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,7 +29,6 @@ const App = () => (
           path="/fine-tuning/classify/:modelId"
           element={<CustomModelClassify />}
         />
-        <Route path="/planos" element={<Planos />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
