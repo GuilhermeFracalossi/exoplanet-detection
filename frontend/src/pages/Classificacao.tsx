@@ -45,7 +45,6 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -1214,14 +1213,14 @@ const Classificacao = () => {
             {isProcessing && (
               <Card>
                 <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
-                      <span className="text-sm font-medium">
-                        Processing data...
-                      </span>
-                    </div>
-                    <Progress value={66} />
+                  <div className="bg-muted/30 rounded-lg p-8 text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent mx-auto mb-4" />
+                    <p className="text-base font-medium mb-2">
+                      Processing data...
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Classifying your exoplanet candidates with Specttra model
+                    </p>
                   </div>
                 </CardContent>
               </Card>
