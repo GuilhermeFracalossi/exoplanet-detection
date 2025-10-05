@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend-api:
-    image: us-central1-docker.pkg.dev/specttra/specttra-deploy/specttra-api:v1
+    image: us-central1-docker.pkg.dev/specttra/specttra-deploy/specttra-api:v4
     container_name: api_service
     restart: unless-stopped
     volumes:
@@ -15,7 +15,7 @@ services:
       - app-network
 
   frontend:
-    image: us-central1-docker.pkg.dev/specttra/specttra-deploy/specttra-app:v3
+    image: us-central1-docker.pkg.dev/specttra/specttra-deploy/specttra-app:v6
     container_name: frontend_service
     restart: unless-stopped
     networks:
