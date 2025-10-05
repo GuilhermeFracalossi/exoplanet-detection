@@ -12,15 +12,11 @@ MODEL_PATH = BASE_DIR / "models" / "modelo_exoplanetas.joblib"
 SCALER_PATH = BASE_DIR / "models" / "scaler_exoplanetas.joblib"
 
 FEATURE_COLUMNS = [
-    "pl_period",
-    "pl_transit_duration",
-    "pl_transit_depth",
-    "pl_radius",
-    "pl_eq_temp",
-    "pl_insolation_flux",
-    "st_eff_temp",
-    "st_radius",
-    "st_logg"
+    'pl_period',
+    'pl_transit_duration',
+    'pl_radius',
+    'st_eff_temp',
+    'st_radius'
 ]
 
 def predict_exoplanets_from_csv(file_like):

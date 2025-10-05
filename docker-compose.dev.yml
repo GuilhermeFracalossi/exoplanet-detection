@@ -6,6 +6,10 @@ services:
     image: specttra-api:latest
     container_name: api_service
     restart: unless-stopped
+    volumes:
+      - ./specttra-api/app/models:/code/app/models 
+    ports:
+      - "8000:8000"
 
     # env_file:
     #   - ./.env
