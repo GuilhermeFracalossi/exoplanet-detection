@@ -49,6 +49,7 @@ const missionData = [
 
 const Index = () => {
   const [realMetrics, setRealMetrics] = useState<any>(null);
+  const [satelliteMetrics, setSatelliteMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,7 +57,10 @@ const Index = () => {
     fetch("http://localhost:8000/api/v1/metrics")
       .then((res) => res.json())
       .then((data) => {
-        setRealMetrics(data.modelos_internos[0]);
+        // Usar métricas globais de teste
+        setRealMetrics(data.metricas_globais_teste);
+        // Usar métricas por satélite
+        setSatelliteMetrics(data.metricas_por_satelite_teste);
         setLoading(false);
       })
       .catch((err) => {
@@ -149,15 +153,15 @@ const Index = () => {
               value={
                 loading
                   ? "..."
-                  : `${(realMetrics?.Acuracia_Media * 100).toFixed(1)}%`
+                  : `${(realMetrics?.acuracia * 100).toFixed(1)}%`
               }
-              description="Specttra Model"
+              description="Test Set Performance"
               icon={<TrendingUp className="h-4 w-4" />}
               delay={0.1}
             />
             <MetricCard
               title={loading ? "Loading..." : "ROC-AUC Score"}
-              value={loading ? "..." : realMetrics?.AUC_ROC_Media.toFixed(3)}
+              value={loading ? "..." : realMetrics?.auc_roc.toFixed(3)}
               description="Excellent discrimination"
               icon={<Cpu className="h-4 w-4" />}
               delay={0.2}
@@ -209,43 +213,71 @@ const Index = () => {
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-6 mt-12">
-            {missionData.map((mission, idx) => (
-              <motion.div
-                key={mission.mission}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="bg-card rounded-2xl p-6 shadow-lg">
-                <h4 className="text-lg font-bold mb-4">{mission.mission}</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Accuracy:</span>
-                    <span className="font-semibold">
-                      {(mission.accuracy * 100).toFixed(1)}%
-                    </span>
+            {loading ? (
+              // Loading placeholder
+              [1, 2, 3].map((idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="bg-card rounded-2xl p-6 shadow-lg">
+                  <h4 className="text-lg font-bold mb-4">Loading...</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Accuracy:</span>
+                      <span className="font-semibold">...</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">F1-Score:</span>
-                    <span className="font-semibold">
-                      {mission.f1.toFixed(2)}
-                    </span>
+                </motion.div>
+              ))
+            ) : satelliteMetrics ? (
+              // Real satellite metrics
+              Object.entries(satelliteMetrics).map(([satellite, metrics]: [string, any], idx) => (
+                <motion.div
+                  key={satellite}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="bg-card rounded-2xl p-6 shadow-lg">
+                  <h4 className="text-lg font-bold mb-4">{satellite}</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Accuracy:</span>
+                      <span className="font-semibold">
+                        {(metrics.acuracia * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">F1-Score:</span>
+                      <span className="font-semibold">
+                        {(metrics.f1_score_planeta * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Recall:</span>
+                      <span className="font-semibold">
+                        {(metrics.recall_planeta * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Precision:</span>
+                      <span className="font-semibold">
+                        {(metrics.precisao_planeta * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">ROC-AUC:</span>
+                      <span className="font-semibold">
+                        {metrics.auc_roc.toFixed(3)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">ROC-AUC:</span>
-                    <span className="font-semibold">
-                      {mission.rocAuc.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">PR-AUC:</span>
-                    <span className="font-semibold">
-                      {mission.prAuc.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))
+            ) : null}
           </div>
         </div>
       </section>

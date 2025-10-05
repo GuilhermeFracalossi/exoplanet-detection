@@ -87,7 +87,7 @@ const Classificacao = () => {
     try {
       setLoadingModelInfo(true);
 
-      // Buscar métricas da mesma forma que o Index.tsx
+      // Buscar métricas da API
       const response = await fetch("http://localhost:8000/api/v1/metrics", {
         method: "GET",
       });
@@ -100,19 +100,19 @@ const Classificacao = () => {
 
       const data = await response.json();
 
-      // Extrair o primeiro modelo interno (mesmo formato do Index.tsx)
-      const modelo = data.modelos_internos?.[0];
+      // Usar métricas globais de teste
+      const metricas = data.metricas_globais_teste;
 
-      if (modelo) {
+      if (metricas) {
         // Mapear para o formato esperado pela interface
         setModelInfo({
-          name: modelo.Modelo || "ExoSight Model",
+          name: "Specttra Model",
           description:
             "Machine Learning model trained with data from Kepler, K2 and TESS space missions",
           metrics: {
-            roc_auc: modelo.AUC_ROC_Media || 0,
-            accuracy: modelo.Acuracia_Media || 0,
-            f1_score: modelo.F1_Planeta_Media || 0,
+            roc_auc: metricas.auc_roc || 0,
+            accuracy: metricas.acuracia || 0,
+            f1_score: metricas.f1_score_planeta || 0,
           },
         });
       } else {
@@ -701,7 +701,9 @@ const Classificacao = () => {
                     </div>
                     <div className="text-center p-4 bg-background/50 rounded-lg">
                       <div className="text-3xl font-bold text-primary mb-1">
-                        {modelInfo.metrics?.f1_score?.toFixed(2) || "N/A"}
+                        {modelInfo.metrics?.f1_score 
+                          ? `${(modelInfo.metrics.f1_score * 100).toFixed(1)}%`
+                          : "N/A"}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         F1-Score

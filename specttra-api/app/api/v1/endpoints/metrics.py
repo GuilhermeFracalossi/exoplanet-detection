@@ -31,22 +31,27 @@ async def get_model_metrics():
             data = json.load(f)
         
         # Transformar os dados para o formato esperado
-        modelos_internos = []
-        for modelo in data.get("modelos_internos", []):
-            modelos_internos.append({
-                "Modelo": modelo["Modelo"],
-                "AUC_ROC_Media": modelo["AUC ROC Média"],
-                "AUC_PRC_Media": modelo["AUC PRC Média"],
-                "Acuracia_Media": modelo["Acurácia Média"],
-                "Precisao_Planeta_Media": modelo["Precisão (Planeta) Média"],
-                "Recall_Planeta_Media": modelo["Recall (Planeta) Média"],
-                "Precisao_Non_Planet_Media": modelo["Precisão (Non Planet) Média"],
-                "Recall_Non_Planet_Media": modelo["Recall (Non Planet) Média"],
-                "F1_Planeta_Media": modelo["F1 (Planeta) Média"],
-                "F1_Non_Planet_Media": modelo["F1 (Non Planet) Média"],
-            })
+        cv_modelo = data["resultados_cv_melhor_modelo"]
         
-        return {"modelos_internos": modelos_internos}
+        response = {
+            "resultados_cv_melhor_modelo": {
+                "Modelo": cv_modelo["Modelo"],
+                "Threshold_Otimo": cv_modelo["Threshold Ótimo"],
+                "AUC_ROC_Media": cv_modelo["AUC ROC Média"],
+                "AUC_PRC_Media": cv_modelo["AUC PRC Média"],
+                "Acuracia_Media": cv_modelo["Acurácia Média"],
+                "Precisao_Planeta_Media": cv_modelo["Precisão (Planeta) Média"],
+                "Recall_Planeta_Media": cv_modelo["Recall (Planeta) Média"],
+                "Precisao_Non_Planet_Media": cv_modelo["Precisão (Non Planet) Média"],
+                "Recall_Non_Planet_Media": cv_modelo["Recall (Non Planet) Média"],
+                "F1_Planeta_Media": cv_modelo["F1 (Planeta) Média"],
+                "F1_Non_Planet_Media": cv_modelo["F1 (Non Planet) Média"],
+            },
+            "metricas_globais_teste": data["metricas_globais_teste"],
+            "metricas_por_satelite_teste": data["metricas_por_satelite_teste"]
+        }
+        
+        return response
     
     except Exception as e:
         raise HTTPException(

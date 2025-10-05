@@ -72,7 +72,16 @@ const FineTuning = () => {
     fetch("http://localhost:8000/api/v1/metrics")
       .then((res) => res.json())
       .then((data) => {
-        setModelInfo(data.modelos_internos?.[0]);
+        // Usar métricas globais de teste
+        const metricas = data.metricas_globais_teste;
+        if (metricas) {
+          setModelInfo({
+            Modelo: "Specttra Model",
+            AUC_ROC_Media: metricas.auc_roc,
+            Acuracia_Media: metricas.acuracia,
+            F1_Planeta_Media: metricas.f1_score_planeta,
+          });
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -244,15 +253,11 @@ const FineTuning = () => {
                           },
                           {
                             label: "F1-Score",
-                            value: modelInfo.F1_Planeta_Media.toFixed(2),
+                            value: `${(modelInfo.F1_Planeta_Media * 100).toFixed(1)}%`,
                           },
                           {
                             label: "ROC-AUC",
-                            value: modelInfo.AUC_ROC_Media.toFixed(2),
-                          },
-                          {
-                            label: "PR-AUC",
-                            value: modelInfo.AUC_PRC_Media.toFixed(2),
+                            value: modelInfo.AUC_ROC_Media.toFixed(3),
                           },
                         ].map((metric) => (
                           <div
@@ -702,22 +707,22 @@ const FineTuning = () => {
                         {
                           label: "Accuracy",
                           value:
-                            (trainingResults.accuracy * 100).toFixed(2) + "%",
+                            (trainingResults.accuracy * 100).toFixed(1) + "%",
                           color: "text-blue-600",
                         },
                         {
                           label: "Precision",
-                          value: trainingResults.precision.toFixed(3),
+                          value: (trainingResults.precision * 100).toFixed(1) + "%",
                           color: "text-purple-600",
                         },
                         {
                           label: "Recall",
-                          value: trainingResults.recall.toFixed(3),
+                          value: (trainingResults.recall * 100).toFixed(1) + "%",
                           color: "text-green-600",
                         },
                         {
                           label: "F1-Score",
-                          value: trainingResults.f1_score.toFixed(3),
+                          value: (trainingResults.f1_score * 100).toFixed(1) + "%",
                           color: "text-orange-600",
                         },
                         {
@@ -837,13 +842,13 @@ const FineTuning = () => {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">F1-Score</span>
                       <Badge variant="secondary">
-                        {modelInfo.F1_Planeta_Media.toFixed(2)}
+                        {(modelInfo.F1_Planeta_Media * 100).toFixed(1)}%
                       </Badge>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ROC-AUC</span>
                       <Badge variant="secondary">
-                        {modelInfo.AUC_ROC_Media.toFixed(2)}
+                        {modelInfo.AUC_ROC_Media.toFixed(3)}
                       </Badge>
                     </div>
                   </div>
