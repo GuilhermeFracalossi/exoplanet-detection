@@ -33,7 +33,7 @@ const Index = () => {
 
   useEffect(() => {
     // Buscar métricas reais da API
-    fetch("http://localhost:8000/api/v1/metrics")
+    fetch("https://specttra.study/api/v1/metrics")
       .then((res) => res.json())
       .then((data) => {
         // Usar métricas globais de teste

@@ -226,7 +226,7 @@ const CreateModel = () => {
 
       setTrainingStatus("Training model with your data...");
 
-      const response = await fetch("http://localhost:8000/api/v1/train", {
+      const response = await fetch("https://specttra.study/api/v1/train", {
         method: "POST",
         body: formData,
       });

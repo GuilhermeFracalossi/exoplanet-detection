@@ -11,6 +11,8 @@ RUN bun install --frozen-lockfile
 COPY . .
 RUN bun run build
 
+COPY dados_exemplo.csv /app/dist/
+
 # Stage 2: Serve the static assets with Nginx
 FROM nginx:stable-alpine
 
