@@ -220,10 +220,6 @@ const FineTuning = () => {
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-primary">✓</span>
-                        <span>Feature importance (explainability)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary">✓</span>
                         <span>Save and export custom models</span>
                       </li>
                     </ul>
@@ -754,61 +750,6 @@ const FineTuning = () => {
                         Export Trained Model
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Importância de Features */}
-            {featureImportance.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5" />
-                      Feature Importance
-                    </CardTitle>
-                    <CardDescription>
-                      Most relevant features for classification (model
-                      explainability)
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Feature</TableHead>
-                          <TableHead>Importance</TableHead>
-                          <TableHead className="w-[200px]">
-                            Visualization
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {featureImportance.map((item, index) => (
-                          <TableRow key={item.feature}>
-                            <TableCell className="font-medium">
-                              <Badge variant="outline">{index + 1}</Badge>
-                              <span className="ml-2">{item.feature}</span>
-                            </TableCell>
-                            <TableCell>
-                              {(item.importance * 100).toFixed(1)}%
-                            </TableCell>
-                            <TableCell>
-                              <div className="w-full bg-muted rounded-full h-2">
-                                <div
-                                  className="bg-primary rounded-full h-2 transition-all"
-                                  style={{ width: `${item.importance * 100}%` }}
-                                />
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
                   </CardContent>
                 </Card>
               </motion.div>
