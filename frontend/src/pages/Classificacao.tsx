@@ -6,6 +6,13 @@ import {
   AlertCircle,
   CheckCircle2,
   Download,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Filter,
+  LayoutGrid,
+  TableIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +30,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+  } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -36,18 +43,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const Classificacao = () => {
   const [file, setFile] = useState<File | null>(null);
   const [mission, setMission] = useState<string>("KOI");
   const [threshold, setThreshold] = useState([0.5]);
+  const [classificationThreshold, setClassificationThreshold] = useState([0.7]); // Threshold para classificação dinâmica
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [modelInfo, setModelInfo] = useState<any>(null);
   const [loadingModelInfo, setLoadingModelInfo] = useState(true);
-  const { toast } = useToast();
-
-  useEffect(() => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [filterPrediction, setFilterPrediction] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  const [pageInput, setPageInput] = useState<string>("1");
+  const { toast } = useToast();  useEffect(() => {
     fetchModelInfo();
   }, []);
 
@@ -322,6 +335,104 @@ const Classificacao = () => {
     }
   };
 
+  // Filtrar e paginar resultados
+  const getFilteredResults = () => {
+    if (!results) return [];
+    
+    let filtered = results.rows;
+    
+    if (filterPrediction !== "all") {
+      filtered = filtered.filter((row: any) => {
+        const dynamicPrediction = getDynamicPrediction(row.confidence);
+        return dynamicPrediction === filterPrediction;
+      });
+    }
+    
+    return filtered;
+  };
+
+  // Função para determinar a classificação baseada no threshold
+  const getDynamicPrediction = (confidence: number): string => {
+    const thresholdValue = classificationThreshold[0];
+    
+    if (confidence >= thresholdValue) {
+      return "PLANETA CONFIRMADO";
+    } else if (confidence >= thresholdValue - 0.15) {
+      return "CANDIDATO FORTE";
+    } else if (confidence >= thresholdValue - 0.30) {
+      return "CANDIDATO FRACO";
+    } else {
+      return "FALSO POSITIVO";
+    }
+  };
+
+  // Calcular resumo dinâmico baseado no threshold
+  const getDynamicSummary = () => {
+    if (!results) return {};
+    
+    const summary: any = {
+      "PLANETA CONFIRMADO": 0,
+      "CANDIDATO FORTE": 0,
+      "CANDIDATO FRACO": 0,
+      "FALSO POSITIVO": 0,
+    };
+    
+    results.rows.forEach((row: any) => {
+      const prediction = getDynamicPrediction(row.confidence);
+      summary[prediction]++;
+    });
+    
+    return summary;
+  };
+
+  const getPaginatedResults = () => {
+    const filtered = getFilteredResults();
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filtered.slice(startIndex, endIndex);
+  };
+
+  const totalPages = Math.ceil(getFilteredResults().length / itemsPerPage);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    setPageInput(newPage.toString());
+  };
+
+  const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPageInput(e.target.value);
+  };
+
+  const handlePageInputSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const pageNum = parseInt(pageInput);
+    if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
+      setCurrentPage(pageNum);
+    } else {
+      setPageInput(currentPage.toString());
+      toast({
+        title: "Página inválida",
+        description: `Por favor, insira um número entre 1 e ${totalPages}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getPredictionColor = (prediction: string) => {
+    switch (prediction) {
+      case "PLANETA CONFIRMADO":
+        return "default";
+      case "CANDIDATO FORTE":
+        return "secondary";
+      case "CANDIDATO FRACO":
+        return "outline";
+      case "FALSO POSITIVO":
+        return "destructive";
+      default:
+        return "outline";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <main className="container pt-24 pb-16 max-w-5xl mx-auto">
@@ -502,79 +613,331 @@ const Classificacao = () => {
             {results && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    Resultados da Classificação
-                  </CardTitle>
-                  <CardDescription>
-                    {results.total} objetos classificados
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        Resultados da Classificação
+                      </CardTitle>
+                      <CardDescription>
+                        {getFilteredResults().length} de {results.total} objetos{" "}
+                        {filterPrediction !== "all" && `(filtrados por ${filterPrediction})`}
+                      </CardDescription>
+                    </div>
+                    
+                    {/* Toggle de visualização */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant={viewMode === "table" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setViewMode("table")}
+                      >
+                        <TableIcon className="h-4 w-4 mr-2" />
+                        Tabela
+                      </Button>
+                      <Button
+                        variant={viewMode === "cards" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setViewMode("cards")}
+                      >
+                        <LayoutGrid className="h-4 w-4 mr-2" />
+                        Cards
+                      </Button>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {Object.entries(results.summary).map(([label, count]) => (
-                      <div key={label} className="bg-muted rounded-lg p-4">
+                  {/* Controle de Threshold Dinâmico */}
+                  <div className="bg-primary/5 border-2 border-primary/20 rounded-lg p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-lg">Threshold de Classificação</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Ajuste a confiança mínima para classificar como planeta confirmado
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-primary">
+                          {(classificationThreshold[0] * 100).toFixed(0)}%
+                        </div>
+                        <div className="text-xs text-muted-foreground">Confiança mínima</div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Slider
+                        value={classificationThreshold}
+                        onValueChange={(value) => {
+                          setClassificationThreshold(value);
+                          setCurrentPage(1); // Reset para primeira página
+                        }}
+                        min={0.3}
+                        max={0.95}
+                        step={0.05}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Menos restritivo (30%)</span>
+                        <span>Mais restritivo (95%)</span>
+                      </div>
+                    </div>
+
+                    {/* Legenda de classificação */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="default" className="whitespace-nowrap">CONFIRMADO</Badge>
+                        <span className="text-xs">≥ {(classificationThreshold[0] * 100).toFixed(0)}%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="whitespace-nowrap">FORTE</Badge>
+                        <span className="text-xs">≥ {((classificationThreshold[0] - 0.15) * 100).toFixed(0)}%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="whitespace-nowrap">FRACO</Badge>
+                        <span className="text-xs">≥ {((classificationThreshold[0] - 0.30) * 100).toFixed(0)}%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="destructive" className="whitespace-nowrap">FALSO POS.</Badge>
+                        <span className="text-xs">&lt; {((classificationThreshold[0] - 0.30) * 100).toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Resumo Dinâmico */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {Object.entries(getDynamicSummary()).map(([label, count]) => (
+                      <button
+                        key={label}
+                        onClick={() => setFilterPrediction(filterPrediction === label ? "all" : label)}
+                        className={`bg-muted rounded-lg p-4 transition-all hover:scale-105 ${
+                          filterPrediction === label ? "ring-2 ring-primary" : ""
+                        }`}
+                      >
                         <div className="text-2xl font-bold">
                           {count as number}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-muted-foreground flex items-center gap-1 justify-center">
+                          <Filter className="h-3 w-3" />
                           {label}
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
 
-                  <div className="border rounded-lg">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ID</TableHead>
-                          <TableHead>Período Orbital (dias)</TableHead>
-                          <TableHead>Duração Trânsito (h)</TableHead>
-                          <TableHead>Profundidade (ppm)</TableHead>
-                          <TableHead>Raio (R⊕)</TableHead>
-                          <TableHead>Temp. Eq. (K)</TableHead>
-                          <TableHead>Predição</TableHead>
-                          <TableHead className="text-right">
-                            Confiança
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {results.rows.map((row: any) => (
-                          <TableRow key={row.id}>
-                            <TableCell className="font-medium">
-                              {row.id}
-                            </TableCell>
-                            <TableCell>{row.pl_period.toFixed(2)}</TableCell>
-                            <TableCell>
-                              {row.pl_transit_duration.toFixed(2)}
-                            </TableCell>
-                            <TableCell>
-                              {row.pl_transit_depth_ppm.toFixed(0)}
-                            </TableCell>
-                            <TableCell>{row.pl_radius.toFixed(2)}</TableCell>
-                            <TableCell>{row.pl_eq_temp.toFixed(0)}</TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  row.prediction === "CONFIRMED"
-                                    ? "default"
-                                    : row.prediction === "PC"
-                                    ? "secondary"
-                                    : "outline"
-                                }>
-                                {row.prediction}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right font-semibold">
-                              {(row.confidence * 100).toFixed(1)}%
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                  {/* Filtros */}
+                  <div className="flex items-center gap-4">
+                    <Select value={filterPrediction} onValueChange={(value) => {
+                      setFilterPrediction(value);
+                      setCurrentPage(1);
+                    }}>
+                      <SelectTrigger className="w-[220px]">
+                        <SelectValue placeholder="Filtrar por classificação" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="PLANETA CONFIRMADO">Planeta Confirmado</SelectItem>
+                        <SelectItem value="CANDIDATO FORTE">Candidato Forte</SelectItem>
+                        <SelectItem value="CANDIDATO FRACO">Candidato Fraco</SelectItem>
+                        <SelectItem value="FALSO POSITIVO">Falso Positivo</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {filterPrediction !== "all" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setFilterPrediction("all");
+                          setCurrentPage(1);
+                        }}
+                      >
+                        Limpar filtro
+                      </Button>
+                    )}
                   </div>
+
+                  {/* Visualização em Tabela */}
+                  {viewMode === "table" && (
+                    <div className="border rounded-lg">
+                      <ScrollArea className="w-full">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[120px]">ID</TableHead>
+                              <TableHead>Período (d)</TableHead>
+                              <TableHead>Duração (h)</TableHead>
+                              <TableHead>Prof. (ppm)</TableHead>
+                              <TableHead>Raio (R⊕)</TableHead>
+                              <TableHead>Temp. (K)</TableHead>
+                              <TableHead>Classificação</TableHead>
+                              <TableHead className="text-right">Conf.</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {getPaginatedResults().map((row: any) => {
+                              const dynamicPrediction = getDynamicPrediction(row.confidence);
+                              return (
+                                <TableRow key={row.id}>
+                                  <TableCell className="font-medium font-mono text-xs">
+                                    {row.id}
+                                  </TableCell>
+                                  <TableCell>{row.pl_period.toFixed(2)}</TableCell>
+                                  <TableCell>
+                                    {row.pl_transit_duration.toFixed(2)}
+                                  </TableCell>
+                                  <TableCell>
+                                    {row.pl_transit_depth_ppm.toFixed(0)}
+                                  </TableCell>
+                                  <TableCell>{row.pl_radius.toFixed(2)}</TableCell>
+                                  <TableCell>{row.pl_eq_temp.toFixed(0)}</TableCell>
+                                  <TableCell>
+                                    <Badge variant={getPredictionColor(dynamicPrediction)}>
+                                      {dynamicPrediction}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-right font-semibold">
+                                    {(row.confidence * 100).toFixed(1)}%
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                        <ScrollBar orientation="horizontal" />
+                      </ScrollArea>
+                    </div>
+                  )}
+
+                  {/* Visualização em Cards */}
+                  {viewMode === "cards" && (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {getPaginatedResults().map((row: any) => {
+                        const dynamicPrediction = getDynamicPrediction(row.confidence);
+                        return (
+                          <Card key={row.id} className="hover:shadow-lg transition-shadow">
+                            <CardHeader className="pb-3">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <CardTitle className="text-base font-mono">
+                                    {row.id}
+                                  </CardTitle>
+                                  <CardDescription className="mt-1">
+                                    Candidato a exoplaneta
+                                  </CardDescription>
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                  <Badge variant={getPredictionColor(dynamicPrediction)}>
+                                    {dynamicPrediction}
+                                  </Badge>
+                                  <span className="text-xs font-semibold">
+                                    {(row.confidence * 100).toFixed(1)}%
+                                  </span>
+                                </div>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                              <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                  <span className="text-muted-foreground">Período:</span>
+                                  <div className="font-semibold">{row.pl_period.toFixed(2)} dias</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Duração:</span>
+                                  <div className="font-semibold">{row.pl_transit_duration.toFixed(2)} h</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Profundidade:</span>
+                                  <div className="font-semibold">{row.pl_transit_depth_ppm.toFixed(0)} ppm</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Raio:</span>
+                                  <div className="font-semibold">{row.pl_radius.toFixed(2)} R⊕</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Temp. Eq.:</span>
+                                  <div className="font-semibold">{row.pl_eq_temp.toFixed(0)} K</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Fluxo:</span>
+                                  <div className="font-semibold">{row.pl_insolation_flux.toFixed(1)}</div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Paginação */}
+                  {totalPages > 1 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+                      <div className="text-sm text-muted-foreground">
+                        Página {currentPage} de {totalPages} ({getFilteredResults().length} resultados)
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        {/* Primeira Página */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(1)}
+                          disabled={currentPage === 1}
+                          title="Primeira página"
+                        >
+                          <ChevronsLeft className="h-4 w-4" />
+                        </Button>
+                        
+                        {/* Página Anterior */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          title="Página anterior"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        
+                        {/* Input de Página */}
+                        <form onSubmit={handlePageInputSubmit} className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="1"
+                            max={totalPages}
+                            value={pageInput}
+                            onChange={handlePageInputChange}
+                            onBlur={handlePageInputSubmit}
+                            className="w-16 h-9 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            title="Digite o número da página"
+                          />
+                          <span className="text-sm text-muted-foreground">/ {totalPages}</span>
+                        </form>
+                        
+                        {/* Página Seguinte */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          title="Próxima página"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+
+                        {/* Última Página */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(totalPages)}
+                          disabled={currentPage === totalPages}
+                          title="Última página"
+                        >
+                          <ChevronsRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
                   <Button className="w-full" variant="outline">
                     <Download className="h-4 w-4 mr-2" />
