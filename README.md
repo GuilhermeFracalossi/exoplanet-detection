@@ -43,9 +43,9 @@ Specttra is a full-stack web application designed to detect exoplanets from stel
     git clone https://github.com/GuilhermeFracalossi/exoplanet-detection.git
     cd exoplanet-detection
     ```
-2.  Run the application using Docker Compose:
+2.  Run the application using Docker Compose (for development environment):
     ```bash
-    docker-compose up -d
+    docker compose -f docker-compose.dev.yml up --build -d
     ```
 3.  The application will be available at `http://localhost:80`.
 
