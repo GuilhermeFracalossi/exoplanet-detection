@@ -286,7 +286,7 @@ const CustomModelClassify = () => {
     formData.append("model_path", modelInfo?.model_path || ""); // Add custom model path
     formData.append("threshold", threshold[0].toString());
 
-    const response = await fetch("https://specttra.study/api/v1/predict", {
+    const response = await fetch("http://localhost/api/v1/predict", {
       method: "POST",
       body: formData,
     });

@@ -87,7 +87,7 @@ const Classificacao = () => {
       setLoadingModelInfo(true);
 
       // Fetch API metrics
-      const response = await fetch("https://specttra.study/api/v1/metrics", {
+      const response = await fetch("http://localhost/api/v1/metrics", {
         method: "GET",
       });
 
@@ -318,7 +318,7 @@ const Classificacao = () => {
     formData.append("mission", "Custom"); // Default mission
     formData.append("threshold", threshold[0].toString());
 
-    const response = await fetch("https://specttra.study/api/v1/predict", {
+    const response = await fetch("http://localhost/api/v1/predict", {
       method: "POST",
       body: formData,
       headers: {
